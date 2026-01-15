@@ -1,0 +1,121 @@
+📌 Comandos SQL — ReservaChro (Users / Schools)
+1) Listar Professores (Role = 3)
+SELECT
+  u."Id",
+  u."Name",
+  u."Email",
+  u."Role",
+  u."SchoolId",
+  s."Name" AS "SchoolName",
+  s."Code" AS "SchoolCode"
+FROM "Users" u
+LEFT JOIN "Schools" s ON s."Id" = u."SchoolId"
+WHERE u."Role" = 3
+ORDER BY s."Name", u."Name";
+
+2) Listar TI (Role = 2)
+SELECT
+  u."Id",
+  u."Name",
+  u."Email",
+  u."Role",
+  u."SchoolId",
+  s."Name" AS "SchoolName",
+  s."Code" AS "SchoolCode"
+FROM "Users" u
+LEFT JOIN "Schools" s ON s."Id" = u."SchoolId"
+WHERE u."Role" = 2
+ORDER BY s."Name", u."Name";
+
+3) Listar Colégios (Schools)
+SELECT
+  s."Id",
+  s."Name",
+  s."Code"
+FROM "Schools" s
+ORDER BY s."Name";
+
+4) Acrescentar Colégio (School)
+
+Troque o UUID, Nome e Code conforme necessário.
+
+INSERT INTO "Schools" ("Id","Name","Code")
+VALUES ('<UUID-DO-COLEGIO>', '<NOME-DO-COLEGIO>', '<CODIGO-UNICO>')
+ON CONFLICT ("Code") DO NOTHING;
+
+
+✅ Exemplo:
+
+INSERT INTO "Schools" ("Id","Name","Code")
+VALUES ('22222222-2222-2222-2222-222222222222', 'Colegio Adventista de Diadema', 'CAD-001')
+ON CONFLICT ("Code") DO NOTHING;
+
+5) Acrescentar Professor (Role = 3)
+
+PasswordSalt é obrigatório. Enquanto seu login está “temporário”, use PasswordHash como a senha em texto e PasswordSalt = 'TEMP'.
+
+INSERT INTO "Users"
+("Id","Name","Email","PasswordHash","PasswordSalt","Role","SchoolId")
+VALUES
+('<UUID-DO-USUARIO>', '<NOME>', '<EMAIL>', '<SENHA>', 'TEMP', 3, '<UUID-DO-COLEGIO>');
+
+
+✅ Exemplo:
+
+INSERT INTO "Users"
+("Id","Name","Email","PasswordHash","PasswordSalt","Role","SchoolId")
+VALUES
+('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Professor', 'professor@adventistas.org', '123', 'TEMP', 3, '22222222-2222-2222-2222-222222222222');
+
+6) Acrescentar TI (Role = 2)
+INSERT INTO "Users"
+("Id","Name","Email","PasswordHash","PasswordSalt","Role","SchoolId")
+VALUES
+('<UUID-DO-USUARIO>', '<NOME>', '<EMAIL>', '<SENHA>', 'TEMP', 2, '<UUID-DO-COLEGIO>');
+
+
+✅ Exemplo:
+
+INSERT INTO "Users"
+("Id","Name","Email","PasswordHash","PasswordSalt","Role","SchoolId")
+VALUES
+('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'TI', 'ti@adventistas.org', '123', 'TEMP', 2, '22222222-2222-2222-2222-222222222222');
+
+7) Excluir Colégio
+
+⚠️ Se houver TI/Professores vinculados, o delete pode falhar por FK. O jeito seguro é apagar usuários da escola primeiro.
+
+BEGIN;
+
+-- 1) Remove usuários vinculados ao colégio (TI/Professor)
+DELETE FROM "Users"
+WHERE "SchoolId" = '<UUID-DO-COLEGIO>'
+  AND "Role" IN (2,3);
+
+-- 2) Remove o colégio
+DELETE FROM "Schools"
+WHERE "Id" = '<UUID-DO-COLEGIO>';
+
+COMMIT;
+
+8) Excluir Professor
+Opção A — por Email (recomendado)
+DELETE FROM "Users"
+WHERE "Role" = 3
+  AND "Email" = '<EMAIL-DO-PROFESSOR>';
+
+Opção B — por Id
+DELETE FROM "Users"
+WHERE "Role" = 3
+  AND "Id" = '<UUID-DO-USUARIO>';
+
+9) Excluir TI
+Opção A — por Email (recomendado)
+DELETE FROM "Users"
+WHERE "Role" = 2
+  AND "Email" = '<EMAIL-DO-TI>';
+
+Opção B — por Id
+DELETE FROM "Users"
+WHERE "Role" = 2
+  AND "Id" = '<UUID-DO-USUARIO>';

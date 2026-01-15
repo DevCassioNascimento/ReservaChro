@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ReservaChro.Mobile.Views.LoginPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#0B3B66"
+    NavigationPage.HasNavigationBar="False">
+
+    <!-- 2 linhas: conteúdo (scroll) + footer fixo -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ====== CAMADA DE FUNDO (fica por trás de tudo) ====== -->
+        <Grid Grid.RowSpan="2">
+            <!-- Background image (circuit pattern) -->
+            <Image Source="login_bg.png"
+                   Aspect="AspectFill"
+                   Opacity="0.95"/>
+
+            <!-- Overlay gradient to match the design tone -->
+            <BoxView>
+                <BoxView.Background>
+                    <LinearGradientBrush StartPoint="0,0"
+                                         EndPoint="0,1">
+                        <GradientStop Color="#083055"
+                                      Offset="0.0"/>
+                        <GradientStop Color="#0B3B66"
+                                      Offset="0.45"/>
+                        <GradientStop Color="#1E7FC2"
+                                      Offset="1.0"/>
+                    </LinearGradientBrush>
+                </BoxView.Background>
+            </BoxView>
+        </Grid>
+
+        <!-- ====== CONTEÚDO PRINCIPAL (scroll) ====== -->
+        <ScrollView Grid.Row="0">
+            <Grid Padding="26"
+                  RowSpacing="18">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Logo circle -->
+                <Grid Grid.Row="0"
+                      Margin="0,28,0,4"
+                      HorizontalOptions="Center">
+                    <Frame WidthRequest="112"
+                           HeightRequest="112"
+                           CornerRadius="56"
+                           BackgroundColor="White"
+                           HasShadow="True"
+                           Padding="18">
+                        <Image Source="logo.png"
+                               Aspect="AspectFit"/>
+                    </Frame>
+                </Grid>
+
+                <!-- Title: [laptop icon] Reserva-Chrome -->
+                <HorizontalStackLayout Grid.Row="1"
+                                       HorizontalOptions="Center"
+                                       Spacing="10"
+                                       Margin="0,8,0,18">
+                    <Image Source="laptop.png"
+                           WidthRequest="30"
+                           HeightRequest="30"
+                           Opacity="0.95"/>
+                    <Label Text="Reserva-Chrome"
+                           TextColor="White"
+                           FontSize="34"
+                           FontAttributes="Bold"
+                           VerticalTextAlignment="Center"/>
+                </HorizontalStackLayout>
+
+                <!-- Username input -->
+                <Frame Grid.Row="2"
+                       BackgroundColor="White"
+                       CornerRadius="26"
+                       HasShadow="True"
+                       Padding="14"
+                       BorderColor="#6DB7F2">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="26"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Column="0"
+                               Text="👤"
+                               FontSize="18"
+                               VerticalTextAlignment="Center"
+                               TextColor="#9AA6B2"/>
+
+                        <Entry x:Name="EmailEntry" Grid.Column="1"
+                               Placeholder="Digite seu nome ou e-mail"
+                               PlaceholderColor="#9AA6B2"
+                               TextColor="#22313F"
+                               BackgroundColor="Transparent"
+                               FontSize="16"
+                               ClearButtonVisibility="WhileEditing"
+                               ReturnType="Next"/>
+                    </Grid>
+                </Frame>
+
+                <!-- Password input -->
+                <Frame Grid.Row="3"
+                       BackgroundColor="White"
+                       CornerRadius="26"
+                       HasShadow="True"
+                       Padding="14"
+                       BorderColor="#6DB7F2">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="26"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Column="0"
+                               Text="🔒"
+                               FontSize="18"
+                               VerticalTextAlignment="Center"
+                               TextColor="#9AA6B2"/>
+
+                        <Entry x:Name="PasswordEntry" Grid.Column="1"
+                               Placeholder="Digite sua senha"
+                               PlaceholderColor="#9AA6B2"
+                               TextColor="#22313F"
+                               BackgroundColor="Transparent"
+                               FontSize="16"
+                               IsPassword="True"
+                               ReturnType="Go"/>
+                    </Grid>
+                </Frame>
+
+                <!-- Entrar button -->
+                <Frame Grid.Row="4"
+                       CornerRadius="32"
+                       HasShadow="True"
+                       Padding="0"
+                       Margin="0,10,0,0"
+                       BackgroundColor="Transparent">
+                    <Button Text="ENTRAR"
+                            HeightRequest="62"
+                            CornerRadius="32"
+                            FontSize="26"
+                            FontAttributes="Bold"
+                            TextColor="White"
+                            BackgroundColor="#0D6EBA"
+                            Clicked="OnLoginClicked"/>
+                </Frame>
+
+                <!-- Bottom links (acima do footer) -->
+                <Grid Grid.Row="5"
+                      Margin="0,14,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0"
+                            Text="Esqueceu a senha?"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            Opacity="0.9"
+                            FontSize="14"/>
+
+                    <Button Grid.Column="1"
+                            Text="Suporte TI"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            Opacity="0.9"
+                            FontSize="14"
+                            HorizontalOptions="End"/>
+                </Grid>
+
+            </Grid>
+        </ScrollView>
+
+
+        <!-- ====== FOOTER (fixo) ====== -->
+        <Grid Grid.Row="1"
+              Padding="0,0,0,10"
+              HorizontalOptions="Fill"
+              VerticalOptions="End">
+
+            <Image Source="footer_illustration.png"
+                   Aspect="AspectFit"
+                   HeightRequest="185"
+                   HorizontalOptions="Center"
+                   Opacity="0.85"
+                   Margin="0,0,0,2"/>
+        </Grid>
+
+    </Grid>
+</ContentPage>

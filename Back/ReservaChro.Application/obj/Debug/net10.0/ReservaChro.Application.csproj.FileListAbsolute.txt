@@ -1,0 +1,31 @@
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\bin\Debug\net10.0\ReservaChro.Application.deps.json
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\bin\Debug\net10.0\ReservaChro.Application.dll
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\bin\Debug\net10.0\ReservaChro.Application.pdb
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\bin\Debug\net10.0\ReservaChro.Domain.dll
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\bin\Debug\net10.0\ReservaChro.Domain.pdb
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.csproj.AssemblyReference.cache
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.AssemblyInfoInputs.cache
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.AssemblyInfo.cs
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.csproj.CoreCompileInputs.cache
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ReservaC.A3FF88A2.Up2Date
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.dll
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\refint\ReservaChro.Application.dll
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.pdb
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ref\ReservaChro.Application.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\Back\ReservaChro.Application\bin\Debug\net10.0\ReservaChro.Application.deps.json
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\bin\Debug\net10.0\ReservaChro.Application.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\bin\Debug\net10.0\ReservaChro.Application.pdb
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\bin\Debug\net10.0\ReservaChro.Domain.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\bin\Debug\net10.0\ReservaChro.Domain.pdb
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.csproj.AssemblyReference.cache
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.AssemblyInfoInputs.cache
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.AssemblyInfo.cs
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.csproj.CoreCompileInputs.cache
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.sourcelink.json
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ReservaC.A3FF88A2.Up2Date
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\obj\Debug\net10.0\refint\ReservaChro.Application.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Application\obj\Debug\net10.0\ReservaChro.Application.pdb
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\Back\ReservaChro.Application\obj\Debug\net10.0\ref\ReservaChro.Application.dll

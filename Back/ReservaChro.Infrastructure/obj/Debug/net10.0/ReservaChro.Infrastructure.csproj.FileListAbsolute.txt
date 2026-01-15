@@ -1,0 +1,83 @@
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Infrastructure.deps.json
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Infrastructure.dll
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Infrastructure.pdb
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Application.dll
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Domain.dll
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Domain.pdb
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Application.pdb
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.AssemblyInfo.cs
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaC.545E4484.Up2Date
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.dll
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\obj\Debug\net10.0\refint\ReservaChro.Infrastructure.dll
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.pdb
+C:\Users\cassio.nascimento\OneDrive - Adventistas\Documentos\Programação\Projetos_Net\ReservaChro\Back\ReservaChro.Infrastructure\obj\Debug\net10.0\ref\ReservaChro.Infrastructure.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\Microsoft.Build.Locator.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe.config
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\Microsoft.IO.Redist.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\Newtonsoft.Json.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\System.Buffers.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\System.Collections.Immutable.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\System.CommandLine.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\System.Memory.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\System.Numerics.Vectors.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\System.Threading.Tasks.Extensions.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\cs\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\de\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\es\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\fr\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\it\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\ja\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\ko\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\pl\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\pt-BR\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\ru\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\tr\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\zh-Hans\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-net472\zh-Hant\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\Microsoft.Build.Locator.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.deps.json
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll.config
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.runtimeconfig.json
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\Newtonsoft.Json.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\System.Collections.Immutable.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\System.CommandLine.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\cs\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\de\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\es\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\fr\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\it\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\ja\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\ko\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\pl\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\pt-BR\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\ru\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\tr\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\zh-Hans\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\BuildHost-netcore\zh-Hant\System.CommandLine.resources.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Infrastructure.deps.json
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Infrastructure.runtimeconfig.json
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Infrastructure.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Infrastructure.pdb
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Application.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Domain.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Domain.pdb
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\bin\Debug\net10.0\ReservaChro.Application.pdb
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.AssemblyInfo.cs
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.sourcelink.json
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaC.545E4484.Up2Date
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\refint\ReservaChro.Infrastructure.dll
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.pdb
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ReservaChro.Infrastructure.genruntimeconfig.cache
+C:\Users\cassio.nascimento\CodeMobile\ReservaChro\back\ReservaChro.Infrastructure\obj\Debug\net10.0\ref\ReservaChro.Infrastructure.dll
