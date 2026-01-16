@@ -1,4 +1,4 @@
-<api type="debug" assembly-name="ReservaChro.Mobile" mvid="acb5524389fc4c77943221cbf9c34068">
+<api type="debug" assembly-name="ReservaChro.Mobile" mvid="d4cd1eb19a3f4ce985b8afdda7e7cce3">
   <java-to-managed>
     <entry java-name="crc6424c7734d665624b9/MainActivity" managed-name="ReservaChro.Mobile.MainActivity, ReservaChro.Mobile" managed-type-token-id="33554443" />
     <entry java-name="crc6424c7734d665624b9/MainApplication" managed-name="ReservaChro.Mobile.MainApplication, ReservaChro.Mobile" managed-type-token-id="33554444" />
