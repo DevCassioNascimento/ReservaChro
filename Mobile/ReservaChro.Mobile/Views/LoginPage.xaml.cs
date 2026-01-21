@@ -9,13 +9,6 @@ public partial class LoginPage : ContentPage
     // Android Emulator -> localhost do PC
     private const string ApiBaseUrl = "http://10.0.2.2:5193";
 
-    // SchoolIds (banco)
-    private static readonly Guid SchoolIdDiadema = Guid.Parse("22222222-2222-2222-2222-222222222222");
-    private static readonly Guid SchoolIdSbc = Guid.Parse("cea0f35d-7b03-44c2-b365-bc59cda6c073");
-
-    // ✅ NOVO COLÉGIO (exemplo)
-    //private static readonly Guid SchoolIdNovo = Guid.Parse("COLE-AQUI-O-UUID-DO-NOVO-COLEGIO");
-
     public LoginPage()
     {
         InitializeComponent();
@@ -25,50 +18,52 @@ public partial class LoginPage : ContentPage
     {
         try
         {
-            var username = EmailEntry?.Text?.Trim();
+            var email = EmailEntry?.Text?.Trim();
             var password = PasswordEntry?.Text;
 
-            // Diagnóstico: confirma se o app está capturando os campos corretamente
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
                 await DisplayAlert(
                     "Atenção",
                     $"Campos vazios detectados.\n" +
-                    $"Username: {(string.IsNullOrWhiteSpace(username) ? "(vazio)" : username)}\n" +
+                    $"Email: {(string.IsNullOrWhiteSpace(email) ? "(vazio)" : email)}\n" +
                     $"Password: {(string.IsNullOrWhiteSpace(password) ? "(vazio)" : "***")}",
                     "OK"
                 );
                 return;
             }
 
-            var http = new HttpClient
+            using var http = new HttpClient
             {
                 BaseAddress = new Uri(ApiBaseUrl),
                 Timeout = TimeSpan.FromSeconds(20)
             };
 
-            // Contrato REAL do seu AuthController: Username + Password
+            // ✅ Envia email (novo padrão)
+            // ✅ Envia username também (compatibilidade com backend antigo)
             var response = await http.PostAsJsonAsync("/auth/login", new
             {
-                username,
+                email,             // novo
+                username = email,  // compatibilidade
                 password
             });
 
             if (!response.IsSuccessStatusCode)
             {
                 var body = await response.Content.ReadAsStringAsync();
-                await DisplayAlert("Login inválido",
+                await DisplayAlert(
+                    "Login inválido",
                     $"Status: {(int)response.StatusCode}\n{body}",
-                    "OK");
+                    "OK"
+                );
                 return;
             }
 
-            // Lê a resposta do backend (LoginResponseDto) para pegar SchoolId com segurança
+            // Lê a resposta do backend (LoginResponseDto) para pegar Token + SchoolId
             var responseJson = await response.Content.ReadAsStringAsync();
 
             // Token (para chamadas futuras)
             var token = TryExtractToken(responseJson);
-
             if (string.IsNullOrWhiteSpace(token))
             {
                 await DisplayAlert("Erro", "Login OK, mas não encontrei o token na resposta.", "OK");
@@ -78,16 +73,9 @@ public partial class LoginPage : ContentPage
             await SecureStorage.SetAsync("auth_token", token);
 
             // Name/Role via JWT (ok para UI)
-            var (name, role) = TryReadNameAndRoleFromJwt(token, username);
+            var (name, role) = TryReadNameAndRoleFromJwt(token, email);
 
-            // Regra: Somente Professor pode entrar nas telas de colégio
-            if (!string.Equals(role, "Professor", StringComparison.OrdinalIgnoreCase))
-            {
-                await DisplayAlert("Acesso negado", "Esta tela é exclusiva para Professor.", "OK");
-                return;
-            }
-
-            // SchoolId via resposta do backend (fonte de verdade para roteamento)
+            // SchoolId via resposta do backend (fonte de verdade)
             var schoolId = TryExtractSchoolId(responseJson);
             if (schoolId is null)
             {
@@ -95,29 +83,29 @@ public partial class LoginPage : ContentPage
                 return;
             }
 
-            // Roteamento por escola
-            if (schoolId.Value == SchoolIdDiadema)
+            // ✅ Roteamento por perfil
+            // TI (aceita "TI" ou "2")
+            if (string.Equals(role, "TI", StringComparison.OrdinalIgnoreCase) || string.Equals(role, "2", StringComparison.OrdinalIgnoreCase))
             {
-                await Navigation.PushAsync(new ColegioDiademaPage(name, role));
+                await Navigation.PushAsync(new TiDashboardPage(name, role, schoolId.Value));
                 return;
             }
 
-            if (schoolId.Value == SchoolIdSbc)
+            // Professor (aceita "Professor" ou "3")
+            if (string.Equals(role, "Professor", StringComparison.OrdinalIgnoreCase) || string.Equals(role, "3", StringComparison.OrdinalIgnoreCase))
             {
-                await Navigation.PushAsync(new ColegioSbcPage(name, role));
+                await Navigation.PushAsync(
+                    new ProfessorSchoolPage(
+                        schoolId: schoolId.Value,
+                        userName: name,
+                        roleName: "Professor"
+                    )
+                );
                 return;
             }
 
-            // ✅ NOVO COLÉGIO (exemplo)
-            //if (schoolId.Value == SchoolIdNovo)
-            //{
-            // await Navigation.PushAsync(new ColegioNovoPage(name, role));
-            // return;
-            //}
-
-            await DisplayAlert("Sem rota",
-                $"Professor autenticado, mas a escola não está mapeada no app.\nSchoolId: {schoolId}",
-                "OK");
+            // Outros perfis: negar
+            await DisplayAlert("Acesso negado", "Perfil não autorizado para esta área.", "OK");
         }
         catch (Exception ex)
         {
@@ -132,18 +120,24 @@ public partial class LoginPage : ContentPage
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
 
-            // LoginResponseDto tem SchoolId
             if (root.ValueKind == JsonValueKind.Object)
             {
+                // schoolId (camel)
                 if (root.TryGetProperty("schoolId", out var sid) && sid.ValueKind == JsonValueKind.String)
-                {
-                    if (Guid.TryParse(sid.GetString(), out var g)) return g;
-                }
+                    return Guid.TryParse(sid.GetString(), out var g) ? g : null;
 
-                // Caso venha "SchoolId" com maiúscula
-                if (root.TryGetProperty("SchoolId", out var sid2))
+                // SchoolId (Pascal)
+                if (root.TryGetProperty("SchoolId", out var sid2) && sid2.ValueKind == JsonValueKind.String)
+                    return Guid.TryParse(sid2.GetString(), out var g2) ? g2 : null;
+
+                // caso venha aninhado em "data"
+                if (root.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object)
                 {
-                    if (sid2.ValueKind == JsonValueKind.String && Guid.TryParse(sid2.GetString(), out var g2)) return g2;
+                    if (data.TryGetProperty("schoolId", out var dsid) && dsid.ValueKind == JsonValueKind.String)
+                        return Guid.TryParse(dsid.GetString(), out var dg) ? dg : null;
+
+                    if (data.TryGetProperty("SchoolId", out var dsid2) && dsid2.ValueKind == JsonValueKind.String)
+                        return Guid.TryParse(dsid2.GetString(), out var dg2) ? dg2 : null;
                 }
             }
 
@@ -168,14 +162,15 @@ public partial class LoginPage : ContentPage
                 if (root.TryGetProperty("accessToken", out var at) && at.ValueKind == JsonValueKind.String) return at.GetString();
                 if (root.TryGetProperty("jwt", out var j) && j.ValueKind == JsonValueKind.String) return j.GetString();
 
-                // seu backend retorna LoginResponseDto com Token (provável)
+                // LoginResponseDto pode vir PascalCase
                 if (root.TryGetProperty("Token", out var tk) && tk.ValueKind == JsonValueKind.String) return tk.GetString();
-                if (root.TryGetProperty("token", out var tk2) && tk2.ValueKind == JsonValueKind.String) return tk2.GetString();
 
+                // caso venha aninhado em "data"
                 if (root.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object)
                 {
                     if (data.TryGetProperty("token", out var dt) && dt.ValueKind == JsonValueKind.String) return dt.GetString();
                     if (data.TryGetProperty("accessToken", out var dat) && dat.ValueKind == JsonValueKind.String) return dat.GetString();
+                    if (data.TryGetProperty("Token", out var dtk) && dtk.ValueKind == JsonValueKind.String) return dtk.GetString();
                 }
             }
 
@@ -187,12 +182,12 @@ public partial class LoginPage : ContentPage
         }
     }
 
-    private static (string name, string role) TryReadNameAndRoleFromJwt(string token, string fallbackUsername)
+    private static (string name, string role) TryReadNameAndRoleFromJwt(string token, string fallbackEmail)
     {
         try
         {
             var parts = token.Split('.');
-            if (parts.Length < 2) return (fallbackUsername, "Usuário");
+            if (parts.Length < 2) return (fallbackEmail, "Usuário");
 
             var payloadJson = Encoding.UTF8.GetString(Base64UrlDecode(parts[1]));
             using var doc = JsonDocument.Parse(payloadJson);
@@ -202,7 +197,7 @@ public partial class LoginPage : ContentPage
                 TryGetString(root, "name") ??
                 TryGetString(root, "unique_name") ??
                 TryGetString(root, "given_name") ??
-                fallbackUsername;
+                fallbackEmail;
 
             string roleRaw =
                 TryGetString(root, "role") ??
@@ -221,7 +216,7 @@ public partial class LoginPage : ContentPage
         }
         catch
         {
-            return (fallbackUsername, "Usuário");
+            return (fallbackEmail, "Usuário");
         }
     }
 

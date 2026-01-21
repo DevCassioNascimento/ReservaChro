@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ReservaChro.Mobile.Views.ProfessorSchoolPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Colégio"
+    BackgroundColor="#06121f">
+
+    <Grid RowDefinitions="70, *">
+
+        <!-- TOP BAR -->
+        <Grid Grid.Row="0"
+              BackgroundColor="#071a2b"
+              Padding="16"
+              ColumnDefinitions="Auto,*,Auto">
+
+            <!-- Left: Avatar + user info -->
+            <HorizontalStackLayout Spacing="10"
+                    VerticalOptions="Center">
+                <Frame WidthRequest="40"
+                       HeightRequest="40"
+                       CornerRadius="20"
+                       BackgroundColor="#0b2a4a"
+                       Padding="0"
+                       HasShadow="False">
+                    <Label Text="👤"
+                           FontSize="18"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           VerticalTextAlignment="Center"
+                           TextColor="White"/>
+                </Frame>
+
+                <VerticalStackLayout Spacing="0"
+                        VerticalOptions="Center">
+                    <Label x:Name="UserNameLabel"
+                           Text="Usuário"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           FontSize="14"/>
+                    <Label x:Name="UserRoleLabel"
+                           Text="Perfil"
+                           TextColor="#8fb6ff"
+                           FontSize="12"/>
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+
+            <!-- Right: Logout -->
+            <Button Grid.Column="2"
+                    Text="⎋"
+                    BackgroundColor="#0b2a4a"
+                    TextColor="White"
+                    CornerRadius="12"
+                    HeightRequest="40"
+                    WidthRequest="50"
+                    Clicked="OnLogoutClicked"
+                    VerticalOptions="Center"/>
+        </Grid>
+
+        <!-- BODY -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="18"
+                    Spacing="16">
+
+                <!-- Header -->
+                <VerticalStackLayout Spacing="10"
+                        HorizontalOptions="Center"
+                        Margin="0,10,0,0">
+                    <Frame WidthRequest="90"
+                           HeightRequest="90"
+                           CornerRadius="18"
+                           Padding="0"
+                           HasShadow="True"
+                           BackgroundColor="#0b2a4a">
+                        <Image x:Name="SchoolLogoImage"
+                               Source="colegiocad.png"
+                               Aspect="AspectFill"/>
+                    </Frame>
+
+                    <!-- Agora dinâmico -->
+                    <Label x:Name="SchoolNameLabel"
+                           Text="Colégio"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           FontSize="22"
+                           HorizontalTextAlignment="Center"/>
+
+                    <Label Text="Agendamento de Chromebooks"
+                           TextColor="#8fb6ff"
+                           FontSize="14"
+                           HorizontalTextAlignment="Center"/>
+                </VerticalStackLayout>
+
+                <!-- Card -->
+                <Frame CornerRadius="16"
+                       BackgroundColor="#0b1b2c"
+                       HasShadow="True"
+                       Padding="16">
+
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="📅  Selecione a data"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               FontSize="13"/>
+                        <DatePicker x:Name="DatePickerReserva"
+                                    TextColor="White"
+                                    BackgroundColor="#2a3a57"/>
+
+                        <Label Text="🕒  Horário"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               FontSize="13"/>
+                        <Picker x:Name="HorarioPicker"
+                                Title="Selecione o horário"
+                                TextColor="White"
+                                BackgroundColor="#2a3a57"/>
+
+                        <Label Text="💻  Quantidade"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               FontSize="13"/>
+                        <Entry x:Name="QuantidadeEntry"
+                               Placeholder="Ex: 10"
+                               Keyboard="Numeric"
+                               TextColor="White"
+                               PlaceholderColor="#8fb6ff"
+                               BackgroundColor="#2a3a57"/>
+
+                        <Button Text="Confirmar Agendamento"
+                                BackgroundColor="#0a60d1"
+                                TextColor="White"
+                                CornerRadius="14"
+                                HeightRequest="48"
+                                Clicked="OnConfirmarClicked"/>
+                    </VerticalStackLayout>
+
+                </Frame>
+
+                <Button Text="Ver Minhas Reservas"
+                        BackgroundColor="#12365e"
+                        TextColor="White"
+                        CornerRadius="14"
+                        HeightRequest="48"
+                        Clicked="OnMinhasReservasClicked"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

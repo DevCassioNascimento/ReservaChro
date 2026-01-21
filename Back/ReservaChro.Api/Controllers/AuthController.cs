@@ -41,7 +41,7 @@ public sealed class AuthController : ControllerBase
         {
             UserId = user.Id,
             Name = user.Name,
-            Username = user.Email,
+            Email = user.Email,
             Role = user.Role.ToString(),
             SchoolId = user.SchoolId,
             Token = token,

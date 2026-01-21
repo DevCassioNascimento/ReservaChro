@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ReservaChro.Mobile.Views.TiDashboardPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Gerenciamento (TI)"
+    BackgroundColor="#06121f">
+
+    <Grid RowDefinitions="70, *">
+
+        <!-- TOP BAR -->
+        <Grid Grid.Row="0"
+              BackgroundColor="#071a2b"
+              Padding="16"
+              ColumnDefinitions="Auto,*,Auto">
+
+            <!-- Left: Avatar + user info -->
+            <HorizontalStackLayout Spacing="12"
+                                   VerticalOptions="Center">
+                <Frame WidthRequest="40"
+                       HeightRequest="40"
+                       CornerRadius="20"
+                       BackgroundColor="#6f35ff"
+                       Padding="0"
+                       HasShadow="False"
+                       VerticalOptions="Center">
+                    <Label Text="⚙️"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           FontSize="16"/>
+                </Frame>
+
+                <VerticalStackLayout Spacing="0"
+                                     VerticalOptions="Center">
+                    <Label x:Name="UserNameLabel"
+                           Text="Carlos Silva"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           FontSize="16"/>
+                    <Label x:Name="UserRoleLabel"
+                           Text="Profissional de TI"
+                           TextColor="#c3a8ff"
+                           FontSize="12"/>
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+
+            <!-- Right: Logout -->
+            <HorizontalStackLayout Grid.Column="2"
+                                   Spacing="8"
+                                   VerticalOptions="Center">
+                <Label Text="Sair"
+                       TextColor="#ff6b6b"
+                       VerticalOptions="Center"/>
+                <Button Text="⎋"
+                        BackgroundColor="Transparent"
+                        TextColor="#ff6b6b"
+                        Clicked="OnLogoutClicked"
+                        Padding="0"
+                        WidthRequest="40"
+                        HeightRequest="40"/>
+            </HorizontalStackLayout>
+
+        </Grid>
+
+        <!-- BODY -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20"
+                                 Spacing="16">
+
+                <!-- TÍTULO -->
+                <VerticalStackLayout Spacing="6"
+                                     HorizontalOptions="Center">
+                    <Label Text="Gerenciamento de Chromebooks"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           FontSize="24"
+                           HorizontalTextAlignment="Center"/>
+
+                    <Label x:Name="SchoolNameLabel"
+                           Text="Colégio Adventista de Diadema"
+                           TextColor="#8fb6ff"
+                           FontSize="13"
+                           HorizontalTextAlignment="Center"/>
+                </VerticalStackLayout>
+
+                <!-- STATS (2x2) -->
+                <Grid ColumnDefinitions="*,*"
+                      RowDefinitions="Auto,Auto"
+                      ColumnSpacing="12"
+                      RowSpacing="12">
+
+                    <!-- Pendentes -->
+                    <Frame Grid.Row="0"
+                            Grid.Column="0"
+                           CornerRadius="16"
+                           HasShadow="False"
+                           BorderColor="#3b3b3b"
+                           Padding="16">
+                        <Frame.Background>
+                            <LinearGradientBrush StartPoint="0,0"
+                                    EndPoint="1,1">
+                                <GradientStop Color="#2a2212"
+                                        Offset="0.0"/>
+                                <GradientStop Color="#1f1b14"
+                                        Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Frame.Background>
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Pendentes"
+                                       TextColor="#ffd36e"
+                                       FontSize="12"/>
+                                <Label x:Name="PendentesValue"
+                                       Text="2"
+                                       TextColor="White"
+                                       FontAttributes="Bold"
+                                       FontSize="28"/>
+                            </VerticalStackLayout>
+
+                            <Label Grid.Column="1"
+                                   Text="❗"
+                                   FontSize="28"
+                                   Opacity="0.45"
+                                   TextColor="#ffd36e"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Frame>
+
+                    <!-- Em Uso -->
+                    <Frame Grid.Row="0"
+                            Grid.Column="1"
+                           CornerRadius="16"
+                           HasShadow="False"
+                           BorderColor="#2c5a4a"
+                           Padding="16">
+                        <Frame.Background>
+                            <LinearGradientBrush StartPoint="0,0"
+                                    EndPoint="1,1">
+                                <GradientStop Color="#0f2a24"
+                                        Offset="0.0"/>
+                                <GradientStop Color="#0a1f1c"
+                                        Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Frame.Background>
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Em Uso"
+                                       TextColor="#62f0b7"
+                                       FontSize="12"/>
+                                <Label x:Name="EmUsoValue"
+                                       Text="1"
+                                       TextColor="White"
+                                       FontAttributes="Bold"
+                                       FontSize="28"/>
+                            </VerticalStackLayout>
+
+                            <Label Grid.Column="1"
+                                   Text="💻"
+                                   FontSize="28"
+                                   Opacity="0.45"
+                                   TextColor="#62f0b7"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Frame>
+
+                    <!-- Confirmadas -->
+                    <Frame Grid.Row="1"
+                            Grid.Column="0"
+                           CornerRadius="16"
+                           HasShadow="False"
+                           BorderColor="#1c4f86"
+                           Padding="16">
+                        <Frame.Background>
+                            <LinearGradientBrush StartPoint="0,0"
+                                    EndPoint="1,1">
+                                <GradientStop Color="#0a1d3b"
+                                        Offset="0.0"/>
+                                <GradientStop Color="#08172d"
+                                        Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Frame.Background>
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Confirmadas"
+                                       TextColor="#8fb6ff"
+                                       FontSize="12"/>
+                                <Label x:Name="ConfirmadasValue"
+                                       Text="1"
+                                       TextColor="White"
+                                       FontAttributes="Bold"
+                                       FontSize="28"/>
+                            </VerticalStackLayout>
+
+                            <Label Grid.Column="1"
+                                   Text="✅"
+                                   FontSize="28"
+                                   Opacity="0.45"
+                                   TextColor="#8fb6ff"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Frame>
+
+                    <!-- Disponível -->
+                    <Frame Grid.Row="1"
+                            Grid.Column="1"
+                           CornerRadius="16"
+                           HasShadow="False"
+                           BorderColor="#4a3a86"
+                           Padding="16">
+                        <Frame.Background>
+                            <LinearGradientBrush StartPoint="0,0"
+                                    EndPoint="1,1">
+                                <GradientStop Color="#1a1238"
+                                        Offset="0.0"/>
+                                <GradientStop Color="#0f0d22"
+                                        Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Frame.Background>
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Disponível"
+                                       TextColor="#c3a8ff"
+                                       FontSize="12"/>
+                                <Label x:Name="DisponivelValue"
+                                       Text="32"
+                                       TextColor="White"
+                                       FontAttributes="Bold"
+                                       FontSize="28"/>
+                            </VerticalStackLayout>
+
+                            <Label Grid.Column="1"
+                                   Text="📦"
+                                   FontSize="28"
+                                   Opacity="0.45"
+                                   TextColor="#c3a8ff"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Frame>
+
+                </Grid>
+
+                <!-- TABS -->
+                <Frame CornerRadius="14"
+                       HasShadow="False"
+                       Padding="6"
+                       BackgroundColor="#152742"
+                       BorderColor="#2a3a57">
+
+                    <Grid ColumnDefinitions="*,*,*"
+                          ColumnSpacing="6">
+
+                        <Button x:Name="TabReservasBtn"
+                                Text="Reservas"
+                                CornerRadius="12"
+                                BackgroundColor="#1b63ff"
+                                TextColor="White"
+                                HeightRequest="40"
+                                Clicked="OnTabReservasClicked"/>
+
+                        <Button x:Name="TabAgendaBtn"
+                                Grid.Column="1"
+                                Text="Agenda Geral"
+                                CornerRadius="12"
+                                BackgroundColor="Transparent"
+                                TextColor="#a8c4ff"
+                                HeightRequest="40"
+                                Clicked="OnTabAgendaClicked"/>
+
+                        <Button x:Name="TabEstoqueBtn"
+                                Grid.Column="2"
+                                Text="Estoque"
+                                CornerRadius="12"
+                                BackgroundColor="Transparent"
+                                TextColor="#a8c4ff"
+                                HeightRequest="40"
+                                Clicked="OnTabEstoqueClicked"/>
+                    </Grid>
+                </Frame>
+
+                <!-- CONTENT: RESERVAS -->
+                <VerticalStackLayout x:Name="ReservasPanel"
+                                     IsVisible="True"
+                                     Spacing="12">
+
+                    <Frame CornerRadius="16"
+                           BackgroundColor="#1b2b45"
+                           HasShadow="False"
+                           Padding="16">
+
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="📋  Gerenciar Reservas"
+                                   TextColor="White"
+                                   FontAttributes="Bold"
+                                   FontSize="16"/>
+
+                            <CollectionView x:Name="ReservasList"
+                                            ItemsSource="{Binding Bookings}"
+                                            SelectionMode="None">
+
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Frame CornerRadius="14"
+                                               HasShadow="False"
+                                               BackgroundColor="#223654"
+                                               Padding="14"
+                                               Margin="0,0,0,8">
+
+                                            <VerticalStackLayout Spacing="10">
+
+                                                <!-- header -->
+                                                <Grid ColumnDefinitions="Auto,*,Auto"
+                                                      ColumnSpacing="10">
+                                                    <Label Text="👤"
+                                                           FontSize="14"
+                                                           TextColor="#8fb6ff"
+                                                           VerticalOptions="Center"/>
+
+                                                    <Label Grid.Column="1"
+                                                           Text="{Binding ProfessorName}"
+                                                           TextColor="White"
+                                                           FontAttributes="Bold"
+                                                           VerticalOptions="Center"/>
+
+                                                    <Frame Grid.Column="2"
+                                                           CornerRadius="10"
+                                                           Padding="8,3"
+                                                           HasShadow="False"
+                                                           BackgroundColor="{Binding StatusColor}">
+                                                        <Label Text="{Binding StatusText}"
+                                                               TextColor="White"
+                                                               FontSize="11"/>
+                                                    </Frame>
+                                                </Grid>
+
+                                                <!-- info row -->
+                                                <Grid ColumnDefinitions="*,*,*"
+                                                      ColumnSpacing="10">
+                                                    <HorizontalStackLayout Spacing="6">
+                                                        <Label Text="📅"
+                                                                FontSize="12"/>
+                                                        <Label Text="{Binding DateText}"
+                                                               TextColor="#cfe0ff"
+                                                               FontSize="12"/>
+                                                    </HorizontalStackLayout>
+
+                                                    <HorizontalStackLayout Grid.Column="1"
+                                                            Spacing="6">
+                                                        <Label Text="🕒"
+                                                                FontSize="12"/>
+                                                        <Label Text="{Binding Time}"
+                                                               TextColor="#cfe0ff"
+                                                               FontSize="12"/>
+                                                    </HorizontalStackLayout>
+
+                                                    <HorizontalStackLayout Grid.Column="2"
+                                                            Spacing="6">
+                                                        <Label Text="💻"
+                                                                FontSize="12"/>
+                                                        <Label Text="{Binding QuantityText}"
+                                                               TextColor="#cfe0ff"
+                                                               FontSize="12"/>
+                                                    </HorizontalStackLayout>
+                                                </Grid>
+
+                                                <!-- actions -->
+                                                <Grid ColumnDefinitions="*,*"
+                                                      ColumnSpacing="10">
+                                                    <Button Text="✅  Confirmar"
+                                                            BackgroundColor="#1aa34a"
+                                                            TextColor="White"
+                                                            CornerRadius="12"
+                                                            HeightRequest="42"
+                                                            IsVisible="{Binding ShowConfirm}"
+                                                            CommandParameter="{Binding Id}"
+                                                            Clicked="OnConfirmarClicked"/>
+
+                                                    <Button Grid.Column="1"
+                                                            Text="⛔  Recusar"
+                                                            BackgroundColor="Transparent"
+                                                            BorderColor="#ff6b6b"
+                                                            BorderWidth="1"
+                                                            TextColor="#ff6b6b"
+                                                            CornerRadius="12"
+                                                            HeightRequest="42"
+                                                            IsVisible="{Binding ShowRecusar}"
+                                                            CommandParameter="{Binding Id}"
+                                                            Clicked="OnRecusarClicked"/>
+
+                                                    <Button Grid.ColumnSpan="2"
+                                                            Text="💜  Confirmar Devolução"
+                                                            BackgroundColor="#7a35ff"
+                                                            TextColor="White"
+                                                            CornerRadius="12"
+                                                            HeightRequest="42"
+                                                            IsVisible="{Binding ShowDevolucao}"
+                                                            CommandParameter="{Binding Id}"
+                                                            Clicked="OnConfirmarDevolucaoClicked"/>
+
+                                                    <Button Grid.ColumnSpan="2"
+                                                            Text="💻  Iniciar Uso"
+                                                            BackgroundColor="#1b63ff"
+                                                            TextColor="White"
+                                                            CornerRadius="12"
+                                                            HeightRequest="42"
+                                                            IsVisible="{Binding ShowIniciarUso}"
+                                                            CommandParameter="{Binding Id}"
+                                                            Clicked="OnIniciarUsoClicked"/>
+                                                </Grid>
+
+                                            </VerticalStackLayout>
+                                        </Frame>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+
+                            </CollectionView>
+
+                        </VerticalStackLayout>
+                    </Frame>
+
+                </VerticalStackLayout>
+
+                <!-- CONTENT: AGENDA -->
+                <VerticalStackLayout x:Name="AgendaPanel"
+                                     IsVisible="False"
+                                     Spacing="12">
+
+                    <Frame CornerRadius="16"
+                           BackgroundColor="#1b2b45"
+                           HasShadow="False"
+                           Padding="16">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="📅  Agenda Geral"
+                                   TextColor="White"
+                                   FontAttributes="Bold"
+                                   FontSize="16"/>
+
+                            <Label Text="(placeholder) aqui entra a lista agrupada por data, igual ao Figma."
+                                   TextColor="#cfe0ff"
+                                   FontSize="12"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                </VerticalStackLayout>
+
+                <!-- CONTENT: ESTOQUE -->
+                <VerticalStackLayout x:Name="EstoquePanel"
+                                     IsVisible="False"
+                                     Spacing="12">
+
+                    <Frame CornerRadius="16"
+                           HasShadow="False"
+                           Padding="16"
+                           BorderColor="#1c4f86">
+                        <Frame.Background>
+                            <LinearGradientBrush StartPoint="0,0"
+                                    EndPoint="1,1">
+                                <GradientStop Color="#0a1d3b"
+                                        Offset="0.0"/>
+                                <GradientStop Color="#1a1238"
+                                        Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Frame.Background>
+
+                        <VerticalStackLayout Spacing="8"
+                                HorizontalOptions="Center">
+                            <Label Text="Estoque Total"
+                                   TextColor="#8fb6ff"
+                                   FontSize="12"/>
+                            <Label x:Name="EstoqueTotalValue"
+                                   Text="40"
+                                   TextColor="White"
+                                   FontAttributes="Bold"
+                                   FontSize="44"/>
+                            <Label Text="Chromebooks"
+                                   TextColor="#cfe0ff"
+                                   FontSize="12"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Frame CornerRadius="16"
+                           BackgroundColor="#1b2b45"
+                           HasShadow="False"
+                           Padding="16">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="⚙️  Atualizar Estoque"
+                                   TextColor="White"
+                                   FontAttributes="Bold"
+                                   FontSize="16"/>
+
+                            <Label Text="Nova Quantidade Total"
+                                   TextColor="#cfe0ff"
+                                   FontSize="12"/>
+
+                            <Entry x:Name="NovoEstoqueEntry"
+                                   Placeholder="Ex: 40"
+                                   Keyboard="Numeric"
+                                   TextColor="White"
+                                   PlaceholderColor="#93a4c7"
+                                   BackgroundColor="#2a3a57"/>
+
+                            <Button Text="Atualizar Estoque"
+                                    BackgroundColor="#1b63ff"
+                                    TextColor="White"
+                                    CornerRadius="12"
+                                    HeightRequest="48"
+                                    Clicked="OnAtualizarEstoqueClicked"/>
+
+                            <Frame CornerRadius="12"
+                                   BackgroundColor="#2a2212"
+                                   HasShadow="False"
+                                   Padding="12">
+                                <HorizontalStackLayout Spacing="10">
+                                    <Label Text="⚠️"
+                                            FontSize="14"
+                                            VerticalOptions="Center"/>
+                                    <Label Text="Atenção: garanta que o total seja compatível com reservas em uso."
+                                           TextColor="#ffd36e"
+                                           FontSize="12"
+                                           VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Frame>
+
+                        </VerticalStackLayout>
+                    </Frame>
+
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>
