@@ -188,6 +188,34 @@ public sealed class ReservaController : ControllerBase
     }
 
     /// <summary>
+    /// Conclui/devolve uma reserva em uso (apenas para TI)
+    /// </summary>
+    [HttpPut("{id:guid}/devolver")]
+    [Authorize(Roles = nameof(Role.TI))]
+    public async Task<IActionResult> Devolver(Guid id)
+    {
+        if (!TryGetSchoolId(out var schoolId))
+            return Unauthorized(new { message = "SchoolId não encontrado no token." });
+
+        try
+        {
+            var sucesso = await _service.ConcluirReservaAsync(id, schoolId);
+            if (!sucesso)
+                return NotFound(new { message = "Reserva não encontrada ou não pertence à sua escola." });
+
+            return Ok(new { message = "Reserva concluída com sucesso." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Erro ao concluir reserva.", detail = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Obtém quantidade disponível para uma data específica
     /// </summary>
     [HttpGet("disponivel")]
@@ -204,6 +232,27 @@ public sealed class ReservaController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "Erro ao obter disponibilidade.", detail = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Lista reservas confirmadas e em uso da escola (apenas para TI) - Agenda Geral
+    /// </summary>
+    [HttpGet("agenda")]
+    [Authorize(Roles = nameof(Role.TI))]
+    public async Task<IActionResult> GetAgenda()
+    {
+        if (!TryGetSchoolId(out var schoolId))
+            return Unauthorized(new { message = "SchoolId não encontrado no token." });
+
+        try
+        {
+            var reservas = await _service.GetConfirmadasEEmUsoBySchoolAsync(schoolId);
+            return Ok(reservas);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Erro ao listar agenda.", detail = ex.Message });
         }
     }
 

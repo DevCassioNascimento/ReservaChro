@@ -33,6 +33,7 @@ public partial class TiDashboardPage : ContentPage
     private static readonly Guid SchoolIdCascs = Guid.Parse("985c5eb2-4268-4ed6-bcd9-e2726e36fd91"); // São Caetano do Sul
 
     public ObservableCollection<TiBookingVm> Bookings { get; } = new();
+    public ObservableCollection<TiAgendaVm> AgendaReservas { get; } = new();
 
     public TiDashboardPage(string name, string role, Guid schoolId, string token = "")
     {
@@ -418,6 +419,11 @@ public partial class TiDashboardPage : ContentPage
         {
             _ = LoadReservasPendentes();
         }
+        // Recarregar agenda quando a aba de agenda for selecionada
+        else if (tab == "agenda")
+        {
+            _ = LoadAgendaReservas();
+        }
     }
 
     private static void SetTabButton(Button btn, bool active)
@@ -635,6 +641,341 @@ public partial class TiDashboardPage : ContentPage
             System.Diagnostics.Debug.WriteLine($"[TI] Exceção OnAtualizarEstoqueClicked: {ex}");
         }
     }
+
+    private async void OnAlterarSenhaClicked(object sender, EventArgs e)
+    {
+        await EnsureTokenAsync();
+
+        if (string.IsNullOrWhiteSpace(_token))
+        {
+            await DisplayAlert("Erro", "Token não encontrado. Faça login novamente.", "OK");
+            return;
+        }
+
+        // Solicitar senha atual
+        var senhaAtual = await DisplayPromptAsync(
+            "Alterar Senha",
+            "Digite sua senha atual:",
+            "OK",
+            "Cancelar",
+            "",
+            -1,
+            Keyboard.Default,
+            "");
+
+        if (string.IsNullOrWhiteSpace(senhaAtual))
+            return;
+
+        // Solicitar nova senha
+        var novaSenha = await DisplayPromptAsync(
+            "Alterar Senha",
+            "Digite a nova senha (mínimo 4 caracteres):",
+            "OK",
+            "Cancelar",
+            "",
+            -1,
+            Keyboard.Default,
+            "");
+
+        if (string.IsNullOrWhiteSpace(novaSenha))
+            return;
+
+        if (novaSenha.Length < 4)
+        {
+            await DisplayAlert("Erro", "A nova senha deve ter pelo menos 4 caracteres.", "OK");
+            return;
+        }
+
+        // Confirmar nova senha
+        var confirmarSenha = await DisplayPromptAsync(
+            "Alterar Senha",
+            "Confirme a nova senha:",
+            "OK",
+            "Cancelar",
+            "",
+            -1,
+            Keyboard.Default,
+            "");
+
+        if (string.IsNullOrWhiteSpace(confirmarSenha))
+            return;
+
+        if (novaSenha != confirmarSenha)
+        {
+            await DisplayAlert("Erro", "As senhas não coincidem.", "OK");
+            return;
+        }
+
+        // Enviar requisição para alterar senha
+        try
+        {
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            var request = new
+            {
+                currentPassword = senhaAtual,
+                newPassword = novaSenha
+            };
+
+            var response = await client.PutAsJsonAsync($"{_apiBaseUrl}/auth/change-password", request);
+            var body = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[TI] PUT /auth/change-password -> {(int)response.StatusCode} {response.StatusCode} | {body}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await DisplayAlert("Sucesso", "✅ Senha alterada com sucesso!", "OK");
+            }
+            else
+            {
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(body);
+                    var mensagemErro = doc.RootElement.TryGetProperty("message", out var msgElement)
+                        ? msgElement.GetString()
+                        : $"Erro {(int)response.StatusCode}";
+
+                    await DisplayAlert("Erro", $"❌ Falha ao alterar senha.\n\n{mensagemErro}", "OK");
+                }
+                catch
+                {
+                    await DisplayAlert("Erro", $"❌ Falha ao alterar senha.\n\nErro {(int)response.StatusCode}", "OK");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Falha ao alterar senha: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[TI] Exceção OnAlterarSenhaClicked: {ex}");
+        }
+    }
+
+    private async Task LoadAgendaReservas()
+    {
+        try
+        {
+            AgendaLoadingIndicator.IsRunning = true;
+            AgendaLoadingIndicator.IsVisible = true;
+            AgendaEmptyLabel.IsVisible = false;
+
+            await EnsureTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(_token))
+            {
+                await DisplayAlert("Erro", "Token não encontrado. Faça login novamente.", "OK");
+                return;
+            }
+
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            var response = await client.GetAsync($"{_apiBaseUrl}/reservas/agenda");
+            var body = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[TI] GET /reservas/agenda -> {(int)response.StatusCode} {response.StatusCode} | {body}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                var mensagemErro = doc.RootElement.TryGetProperty("message", out var msgElement)
+                    ? msgElement.GetString()
+                    : $"Erro {(int)response.StatusCode}";
+
+                await DisplayAlert("Erro", $"❌ Falha ao carregar agenda.\n\n{mensagemErro}", "OK");
+                return;
+            }
+
+            // Deserializar resposta
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            List<ReservaResponseDto>? reservas = null;
+
+            try
+            {
+                reservas = System.Text.Json.JsonSerializer.Deserialize<List<ReservaResponseDto>>(body, options);
+            }
+            catch
+            {
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(body);
+                    if (doc.RootElement.TryGetProperty("data", out var dataElement))
+                    {
+                        reservas = System.Text.Json.JsonSerializer.Deserialize<List<ReservaResponseDto>>(dataElement.GetRawText(), options);
+                    }
+                    else if (doc.RootElement.TryGetProperty("reservas", out var reservasElement))
+                    {
+                        reservas = System.Text.Json.JsonSerializer.Deserialize<List<ReservaResponseDto>>(reservasElement.GetRawText(), options);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[TI] Erro ao deserializar agenda: {ex}");
+                }
+            }
+
+            if (reservas == null)
+            {
+                reservas = new List<ReservaResponseDto>();
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[TI] Total de reservas na agenda: {reservas.Count}");
+
+            // Limpar e atualizar lista
+            AgendaReservas.Clear();
+
+            foreach (var reserva in reservas)
+            {
+                // Determinar status text e color
+                string statusText;
+                Color statusColor;
+                string dataText = reserva.DataCriacao.ToString("dd/MM/yyyy HH:mm");
+
+                switch (reserva.Status)
+                {
+                    case 2: // Confirmada
+                        statusText = "✅ Confirmada";
+                        statusColor = Color.FromArgb("#6bcf7f");
+                        break;
+                    case 4: // EmUso
+                        statusText = "🔄 Em Uso";
+                        statusColor = Color.FromArgb("#4a9eff");
+                        break;
+                    default:
+                        statusText = "❓ Desconhecido";
+                        statusColor = Colors.Gray;
+                        break;
+                }
+
+                // Validar se os dados estão corretos antes de adicionar
+                if (reserva.Id == Guid.Empty)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[TI] Reserva com ID vazio ignorada na agenda");
+                    continue;
+                }
+
+                // Formatar data corretamente (pode estar em UTC)
+                var dataFormatada = reserva.DataReserva == default
+                    ? "Data inválida"
+                    : reserva.DataReserva.ToString("dd/MM/yyyy");
+
+                // Formatar horário
+                var horarioFormatado = reserva.HorarioInicio == default || reserva.HorarioFim == default
+                    ? "Horário inválido"
+                    : $"{reserva.HorarioInicio:hh\\:mm} - {reserva.HorarioFim:hh\\:mm}";
+
+                // Validar quantidade
+                var quantidadeTexto = reserva.Quantidade <= 0
+                    ? "0 unidades"
+                    : $"{reserva.Quantidade} unidades";
+
+                AgendaReservas.Add(new TiAgendaVm
+                {
+                    Id = reserva.Id.ToString(),
+                    ProfessorName = string.IsNullOrWhiteSpace(reserva.ProfessorNome) ? "Professor" : reserva.ProfessorNome,
+                    DateText = dataFormatada,
+                    Time = horarioFormatado,
+                    QuantityText = quantidadeTexto,
+                    StatusText = statusText,
+                    StatusColor = statusColor,
+                    DataText = dataText,
+                    ShowDevolver = reserva.Status == 4 // Apenas para Em Uso
+                });
+            }
+
+            // Mostrar empty state se não houver reservas
+            if (AgendaReservas.Count == 0)
+            {
+                AgendaEmptyLabel.IsVisible = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Falha ao carregar agenda: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[TI] Exceção LoadAgendaReservas: {ex}");
+        }
+        finally
+        {
+            AgendaLoadingIndicator.IsRunning = false;
+            AgendaLoadingIndicator.IsVisible = false;
+        }
+    }
+
+    private async void OnDevolverClicked(object sender, EventArgs e)
+    {
+        var idString = (sender as Button)?.CommandParameter?.ToString();
+        if (string.IsNullOrWhiteSpace(idString) || !Guid.TryParse(idString, out var reservaId))
+        {
+            await DisplayAlert("Erro", "ID da reserva inválido.", "OK");
+            return;
+        }
+
+        // Confirmar ação
+        var confirmar = await DisplayAlert(
+            "Confirmar Devolução",
+            "Tem certeza que deseja marcar esta reserva como devolvida?",
+            "Sim, Devolver",
+            "Cancelar");
+
+        if (!confirmar)
+            return;
+
+        try
+        {
+            await EnsureTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(_token))
+            {
+                await DisplayAlert("Erro", "Token não encontrado. Faça login novamente.", "OK");
+                return;
+            }
+
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            var response = await client.PutAsync($"{_apiBaseUrl}/reservas/{reservaId}/devolver", null);
+            var body = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[TI] PUT /reservas/{reservaId}/devolver -> {(int)response.StatusCode} {response.StatusCode} | {body}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await DisplayAlert("Sucesso", "✅ Reserva concluída com sucesso!", "OK");
+                // Recarregar agenda (o card será removido automaticamente)
+                await LoadAgendaReservas();
+            }
+            else
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                var mensagemErro = doc.RootElement.TryGetProperty("message", out var msgElement)
+                    ? msgElement.GetString()
+                    : $"Erro {(int)response.StatusCode}";
+
+                await DisplayAlert("Erro", $"❌ Falha ao devolver reserva.\n\n{mensagemErro}", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Falha ao devolver reserva: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[TI] Exceção OnDevolverClicked: {ex}");
+        }
+    }
 }
 
 public class ChromestoqueResponseDto
@@ -696,4 +1037,18 @@ public class TiBookingVm
     public bool ShowRecusar { get; set; }
     public bool ShowIniciarUso { get; set; }
     public bool ShowDevolucao { get; set; }
+}
+
+// ViewModel para Agenda
+public class TiAgendaVm
+{
+    public string Id { get; set; } = string.Empty;
+    public string ProfessorName { get; set; } = string.Empty;
+    public string DateText { get; set; } = string.Empty;
+    public string Time { get; set; } = string.Empty;
+    public string QuantityText { get; set; } = string.Empty;
+    public string StatusText { get; set; } = string.Empty;
+    public Color StatusColor { get; set; } = Colors.White;
+    public string DataText { get; set; } = string.Empty;
+    public bool ShowDevolver { get; set; } = false;
 }

@@ -438,11 +438,103 @@
                                    FontAttributes="Bold"
                                    FontSize="16"/>
 
-                            <Label Text="(placeholder) aqui entra a lista agrupada por data, igual ao Figma."
+                            <ActivityIndicator x:Name="AgendaLoadingIndicator"
+                                               IsRunning="False"
+                                               IsVisible="False"
+                                               Color="White"
+                                               HeightRequest="30"/>
+
+                            <Label x:Name="AgendaEmptyLabel"
+                                   Text="Nenhuma reserva confirmada ou em uso no momento."
                                    TextColor="#cfe0ff"
-                                   FontSize="12"/>
+                                   FontSize="12"
+                                   IsVisible="False"
+                                   HorizontalOptions="Center"
+                                   Margin="0,20,0,0"/>
                         </VerticalStackLayout>
                     </Frame>
+
+                    <CollectionView x:Name="AgendaCollectionView"
+                                    ItemsSource="{Binding AgendaReservas}"
+                                    SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame CornerRadius="16"
+                                       BackgroundColor="#1b2b45"
+                                       HasShadow="True"
+                                       Padding="16"
+                                       Margin="0,0,0,12">
+                                    <VerticalStackLayout Spacing="10">
+                                        <!-- Header: Status e Data -->
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Label Text="{Binding StatusText}"
+                                                   TextColor="{Binding StatusColor}"
+                                                   FontAttributes="Bold"
+                                                   FontSize="14"/>
+                                            <Label Text="{Binding DataText}"
+                                                   TextColor="#8fb6ff"
+                                                   FontSize="12"
+                                                   HorizontalOptions="EndAndExpand"/>
+                                        </HorizontalStackLayout>
+
+                                        <!-- Divider -->
+                                        <BoxView HeightRequest="1"
+                                                 BackgroundColor="#2a3a57"
+                                                 Margin="0,4,0,4"/>
+
+                                        <!-- Details -->
+                                        <VerticalStackLayout Spacing="6">
+                                            <HorizontalStackLayout Spacing="8">
+                                                <Label Text="👤"
+                                                       TextColor="#8fb6ff"
+                                                       FontSize="14"/>
+                                                <Label Text="{Binding ProfessorName}"
+                                                       TextColor="White"
+                                                       FontSize="13"/>
+                                            </HorizontalStackLayout>
+
+                                            <HorizontalStackLayout Spacing="8">
+                                                <Label Text="📅"
+                                                       TextColor="#8fb6ff"
+                                                       FontSize="14"/>
+                                                <Label Text="{Binding DateText}"
+                                                       TextColor="White"
+                                                       FontSize="13"/>
+                                            </HorizontalStackLayout>
+
+                                            <HorizontalStackLayout Spacing="8">
+                                                <Label Text="🕒"
+                                                       TextColor="#8fb6ff"
+                                                       FontSize="14"/>
+                                                <Label Text="{Binding Time}"
+                                                       TextColor="White"
+                                                       FontSize="13"/>
+                                            </HorizontalStackLayout>
+
+                                            <HorizontalStackLayout Spacing="8">
+                                                <Label Text="💻"
+                                                       TextColor="#8fb6ff"
+                                                       FontSize="14"/>
+                                                <Label Text="{Binding QuantityText}"
+                                                       TextColor="White"
+                                                       FontSize="13"/>
+                                            </HorizontalStackLayout>
+                                        </VerticalStackLayout>
+
+                                        <!-- Action Button (apenas para Em Uso) -->
+                                        <Button Text="✅ Devolver"
+                                                BackgroundColor="#6bcf7f"
+                                                TextColor="White"
+                                                CornerRadius="12"
+                                                HeightRequest="42"
+                                                IsVisible="{Binding ShowDevolver}"
+                                                CommandParameter="{Binding Id}"
+                                                Clicked="OnDevolverClicked"/>
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
 
                 </VerticalStackLayout>
 
@@ -524,6 +616,25 @@
                                 </HorizontalStackLayout>
                             </Frame>
 
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <Frame CornerRadius="16"
+                           BackgroundColor="#1b2b45"
+                           HasShadow="False"
+                           Padding="16">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="🔐  Configurações de Conta"
+                                   TextColor="White"
+                                   FontAttributes="Bold"
+                                   FontSize="16"/>
+
+                            <Button Text="Alterar Senha"
+                                    BackgroundColor="#2a3a57"
+                                    TextColor="White"
+                                    CornerRadius="14"
+                                    HeightRequest="48"
+                                    Clicked="OnAlterarSenhaClicked"/>
                         </VerticalStackLayout>
                     </Frame>
 

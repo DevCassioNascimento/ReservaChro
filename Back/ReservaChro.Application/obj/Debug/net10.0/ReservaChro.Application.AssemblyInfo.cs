@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ReservaChro.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e2618b616864316a63447593d0501e3c5f0375f3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+69c3d300fd5bdc20c4c085fb27e443a24a81b917")]
 [assembly: System.Reflection.AssemblyProductAttribute("ReservaChro.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ReservaChro.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

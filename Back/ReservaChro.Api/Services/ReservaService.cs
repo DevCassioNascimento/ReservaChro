@@ -12,9 +12,11 @@ public interface IReservaService
     Task<List<ReservaResponseDto>> GetPendentesBySchoolAsync(Guid schoolId);
     Task<List<ReservaResponseDto>> GetTodasBySchoolAsync(Guid schoolId);
     Task<List<ReservaResponseDto>> GetByProfessorAsync(Guid professorId, Guid schoolId);
+    Task<List<ReservaResponseDto>> GetConfirmadasEEmUsoBySchoolAsync(Guid schoolId);
     Task<ReservaResponseDto?> GetByIdAsync(Guid id);
     Task<bool> ConfirmarReservaAsync(Guid id, Guid schoolId);
     Task<bool> RecusarReservaAsync(Guid id, Guid schoolId);
+    Task<bool> ConcluirReservaAsync(Guid id, Guid schoolId);
     Task<int> GetQuantidadeDisponivelAsync(Guid schoolId, DateTime data);
 }
 
@@ -196,6 +198,39 @@ public sealed class ReservaService : IReservaService
         }).ToList();
     }
 
+    public async Task<List<ReservaResponseDto>> GetConfirmadasEEmUsoBySchoolAsync(Guid schoolId)
+    {
+        if (schoolId == Guid.Empty) return new List<ReservaResponseDto>();
+
+        var reservas = await Reservas
+            .AsNoTracking()
+            .Where(r => r.SchoolId == schoolId && 
+                       (r.Status == StatusReserva.Confirmada || r.Status == StatusReserva.EmUso))
+            .OrderBy(r => r.DataReserva)
+            .ThenBy(r => r.HorarioInicio)
+            .ToListAsync();
+
+        var professorIds = reservas.Select(r => r.ProfessorId).Distinct().ToList();
+        var professores = await _dbContext.Users
+            .AsNoTracking()
+            .Where(u => professorIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.Name);
+
+        return reservas.Select(r => new ReservaResponseDto
+        {
+            Id = r.Id,
+            ProfessorId = r.ProfessorId,
+            ProfessorNome = professores.TryGetValue(r.ProfessorId, out var nome) ? nome : "Professor",
+            SchoolId = r.SchoolId,
+            DataReserva = r.DataReserva,
+            HorarioInicio = r.HorarioInicio,
+            HorarioFim = r.HorarioFim,
+            Quantidade = r.Quantidade,
+            Status = (int)r.Status,
+            DataCriacao = r.DataCriacao
+        }).ToList();
+    }
+
     public async Task<ReservaResponseDto?> GetByIdAsync(Guid id)
     {
         if (id == Guid.Empty) return null;
@@ -268,6 +303,31 @@ public sealed class ReservaService : IReservaService
             throw new InvalidOperationException("Apenas reservas pendentes podem ser recusadas.");
 
         reserva.Recusar();
+
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> ConcluirReservaAsync(Guid id, Guid schoolId)
+    {
+        if (id == Guid.Empty || schoolId == Guid.Empty)
+            return false;
+
+        var reserva = await Reservas.FirstOrDefaultAsync(r => r.Id == id);
+        if (reserva is null || reserva.SchoolId != schoolId)
+            return false;
+
+        if (reserva.Status != StatusReserva.EmUso)
+            throw new InvalidOperationException("Apenas reservas em uso podem ser concluídas.");
+
+        reserva.Concluir();
 
         try
         {
