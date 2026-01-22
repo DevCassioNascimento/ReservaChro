@@ -34,18 +34,40 @@ public sealed class JwtTokenService : IJwtTokenService
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
+        // ✅ IMPORTANTE:
+        // No Program.cs você configurou:
+        // NameClaimType = "name"
+        // RoleClaimType = "role"
+        // Então o token PRECISA conter as claims "name" e "role".
+        // Mantemos também ClaimTypes.* para compatibilidade com código antigo.
+
+        var roleText = user.Role.ToString(); // esperado: "TI", "Professor", "Admin"
+
         var claims = new List<Claim>
         {
+            // Identidade básica
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.UniqueName, user.Email ?? string.Empty),
+
+            // ✅ NameClaimType esperado pelo pipeline (Program.cs)
+            new("name", user.Name ?? string.Empty),
+
+            // ✅ RoleClaimType esperado pelo pipeline (Program.cs)
+            new("role", roleText),
+
+            // Compatibilidade
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.Name ?? string.Empty),
-            new(ClaimTypes.Role, user.Role.ToString())
+            new(ClaimTypes.Role, roleText)
         };
 
-        // Se você usa isolamento por escola
+        // Isolamento por escola (obrigatório para TI/Professor)
         if (user.SchoolId is not null)
+        {
             claims.Add(new Claim("schoolId", user.SchoolId.ToString()!));
+            // compatibilidade (caso algum lugar leia PascalCase)
+            claims.Add(new Claim("SchoolId", user.SchoolId.ToString()!));
+        }
 
         var expiresAtUtc = DateTime.UtcNow.AddMinutes(expiresMinutes);
 

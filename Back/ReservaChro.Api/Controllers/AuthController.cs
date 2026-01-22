@@ -20,19 +20,31 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto? request)
     {
-        if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+        // ✅ proteção contra body null (evita 500 em chamadas erradas)
+        if (request is null)
+            return BadRequest("Request body is required.");
+
+        // ✅ Normaliza entrada
+        var username = (request.Username ?? string.Empty).Trim();
+        var password = request.Password ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             return BadRequest("Username and password are required.");
 
+        // ✅ Busca case-insensitive e tolerante a e-mail salvo com maiúsculas
+        // (Evita falhas de login por diferença de caixa)
+        var normalized = username.ToLowerInvariant();
+
         var user = await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.Email == request.Username.ToLower());
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == normalized);
 
         if (user is null)
             return Unauthorized("Invalid credentials.");
 
         // TEMPORÁRIO (sem hash)
-        if (user.PasswordHash != request.Password)
+        if (user.PasswordHash != password)
             return Unauthorized("Invalid credentials.");
 
         var (token, expiresAtUtc) = _jwt.Generate(user);

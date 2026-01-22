@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -15,42 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// JWT Authentication
-var jwtSection = builder.Configuration.GetSection("JwtSettings");
-var jwtKey = jwtSection["Key"];
-
-if (string.IsNullOrWhiteSpace(jwtKey))
-    throw new InvalidOperationException("JwtSettings:Key não configurado no appsettings.");
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = false; // dev
-        options.SaveToken = true;
-
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-
-            ValidateIssuer = true,
-            ValidIssuer = jwtSection["Issuer"],
-
-            ValidateAudience = true,
-            ValidAudience = jwtSection["Audience"],
-
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1)
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-// JWT Token Service
-builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-
-// Swagger (Swashbuckle) + Authorize (Bearer)
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -60,14 +26,15 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1"
     });
 
+    // JWT no Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT",
-        Description = "Informe: Bearer {seu_token}"
+        In = ParameterLocation.Header,
+        Description = "Informe o token JWT assim: Bearer {seu_token}"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -86,16 +53,75 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// Services (DI)
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IChromestoqueService, ChromestoqueService>();
+
+// JWT Authentication
+var jwtSection = builder.Configuration.GetSection("JwtSettings");
+var jwtKey = jwtSection["Key"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new InvalidOperationException("JwtSettings:Key não configurado no appsettings.");
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false; // DEV
+        options.SaveToken = true;
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+
+            ValidateIssuer = true,
+            ValidIssuer = jwtSection["Issuer"],
+
+            ValidateAudience = true,
+            ValidAudience = jwtSection["Audience"],
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1),
+
+            // ✅ CORRETO PARA O SEU JwtTokenService:
+            // Ele emite ClaimTypes.Name e ClaimTypes.Role
+            NameClaimType = ClaimTypes.Name,
+            RoleClaimType = ClaimTypes.Role
+        };
+
+        // Ajuda diagnóstico: quando token falhar, responde 401 claro
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = context =>
+            {
+                // evita o comportamento padrão
+                context.HandleResponse();
+
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/json";
+
+                var payload = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    message = "Não autorizado. Token ausente/inválido/expirado.",
+                    error = context.Error,
+                    error_description = context.ErrorDescription
+                });
+
+                return context.Response.WriteAsync(payload);
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "ReservaChro API v1");
-        c.RoutePrefix = "swagger";
-    });
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

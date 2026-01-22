@@ -87,7 +87,7 @@ public partial class LoginPage : ContentPage
             // TI (aceita "TI" ou "2")
             if (string.Equals(role, "TI", StringComparison.OrdinalIgnoreCase) || string.Equals(role, "2", StringComparison.OrdinalIgnoreCase))
             {
-                await Navigation.PushAsync(new TiDashboardPage(name, role, schoolId.Value));
+                await Navigation.PushAsync(new TiDashboardPage(name, role, schoolId.Value, token));
                 return;
             }
 

@@ -14,6 +14,13 @@ public sealed class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<School> Schools => Set<School>();
 
+    // ✅ Padronização: plural é mais seguro no código.
+    // Mantemos a tabela como "Chromestoque" (já está assim no banco/migration).
+    public DbSet<Chromestoque> Chromestoques => Set<Chromestoque>();
+
+    // ✅ Compatibilidade (caso algum código antigo ainda use Chromestoque)
+    public DbSet<Chromestoque> Chromestoque => Set<Chromestoque>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -66,6 +73,45 @@ public sealed class AppDbContext : DbContext
 
             entity.HasIndex(s => s.Code)
                 .IsUnique();
+        });
+
+        // CHROMESTOQUE
+        modelBuilder.Entity<Chromestoque>(entity =>
+        {
+            entity.ToTable("Chromestoque");
+
+            entity.HasKey(c => c.Id);
+
+            entity.Property(c => c.NomeMaquina)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(c => c.NumeroSerie)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.HasIndex(c => c.NumeroSerie)
+                .IsUnique();
+
+            entity.Property(c => c.Modelo)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(c => c.DataAquisicao)
+                .IsRequired();
+
+            entity.Property(c => c.Ativo)
+                .IsRequired()
+                .HasDefaultValue(true);
+
+            entity.Property(c => c.SchoolId)
+                .IsRequired();
+
+            // ✅ FK explícita para garantir integridade e evitar bugs silenciosos
+            entity.HasOne<School>()
+                .WithMany()
+                .HasForeignKey(c => c.SchoolId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // SEED (determinístico para ambiente de desenvolvimento)

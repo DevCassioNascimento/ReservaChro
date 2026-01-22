@@ -1,44 +1,38 @@
 // ReservaChro\Mobile\ReservaChro.Mobile\Views\TiDashboardPage.xaml.cs
 using System.Collections.ObjectModel;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace ReservaChro.Mobile.Views;
 
 public partial class TiDashboardPage : ContentPage
 {
     private readonly Guid _schoolId;
-    private static readonly Guid SchoolIdDiadema = Guid.Parse("22222222-2222-2222-2222-222222222222"); // Diadema
-    private static readonly Guid SchoolIdSbc = Guid.Parse("cea0f35d-7b03-44c2-b365-bc59cda6c073"); // São Bernardo do Campo
+    private string _token;
+    private string _apiBaseUrl;
 
-    private static readonly Guid SchoolIdEaa = Guid.Parse("b10550e8-a08e-4647-a44d-c7635a44c240"); // Americanopolis 
-
-    private static readonly Guid SchoolIdCacia = Guid.Parse("0f1e3953-40ca-4a8b-95ad-e2f06fdd3d83"); // Cidade Ademar 
-
-    private static readonly Guid SchoolIdCadg = Guid.Parse("5699b934-93e3-4419-91ff-513f3d645d06"); // Guaruja
-
-    private static readonly Guid SchoolIdCai = Guid.Parse("9a529bf0-e491-48f5-8453-e569e668f856"); // Interlagos
-
-    private static readonly Guid SchoolIdCaju = Guid.Parse("57764f1f-0a29-4969-a5a8-5a7106fef8c1"); // Jardim Utinga
-
-    private static readonly Guid SchoolIdCam = Guid.Parse("4956125d-d1e6-49bf-a15a-870c3c43dfcb"); // Maua
-
-    private static readonly Guid SchoolIdCap = Guid.Parse("b33dd6fb-e1d0-4f51-ac99-4b5a20d8f8cf"); // Pedreira
-
-    private static readonly Guid SchoolIdCapg = Guid.Parse("102308b1-5588-4704-a83d-b25dd810fbeb");// Praia Grande
-
-    private static readonly Guid SchoolIdCarr = Guid.Parse("2fd8108d-3bba-4234-b993-7ef2aeae9b99"); // Rudge Ramos
-
-    private static readonly Guid SchoolIdCasa = Guid.Parse("00b01fa8-b32f-45d7-9434-ad519e921992"); // Santo André
-
-    private static readonly Guid SchoolIdCas = Guid.Parse("e8c26a70-1eb6-419d-a9b5-3b6a16abcbc0"); // Santos
-
-    private static readonly Guid SchoolIdCascs = Guid.Parse("985c5eb2-4268-4ed6-bcd9-e2726e36fd91"); // São Caetano do Sul
     private readonly string _name;
     private readonly string _role;
 
+    // SchoolIds (banco) - usados só para mapear nome na UI
+    private static readonly Guid SchoolIdDiadema = Guid.Parse("22222222-2222-2222-2222-222222222222"); // Diadema
+    private static readonly Guid SchoolIdSbc = Guid.Parse("cea0f35d-7b03-44c2-b365-bc59cda6c073"); // São Bernardo do Campo
+    private static readonly Guid SchoolIdEaa = Guid.Parse("b10550e8-a08e-4647-a44d-c7635a44c240"); // Americanopolis
+    private static readonly Guid SchoolIdCacia = Guid.Parse("0f1e3953-40ca-4a8b-95ad-e2f06fdd3d83"); // Cidade Ademar
+    private static readonly Guid SchoolIdCadg = Guid.Parse("5699b934-93e3-4419-91ff-513f3d645d06"); // Guaruja
+    private static readonly Guid SchoolIdCai = Guid.Parse("9a529bf0-e491-48f5-8453-e569e668f856"); // Interlagos
+    private static readonly Guid SchoolIdCaju = Guid.Parse("57764f1f-0a29-4969-a5a8-5a7106fef8c1"); // Jardim Utinga
+    private static readonly Guid SchoolIdCam = Guid.Parse("4956125d-d1e6-49bf-a15a-870c3c43dfcb"); // Maua
+    private static readonly Guid SchoolIdCap = Guid.Parse("b33dd6fb-e1d0-4f51-ac99-4b5a20d8f8cf"); // Pedreira
+    private static readonly Guid SchoolIdCapg = Guid.Parse("102308b1-5588-4704-a83d-b25dd810fbeb"); // Praia Grande
+    private static readonly Guid SchoolIdCarr = Guid.Parse("2fd8108d-3bba-4234-b993-7ef2aeae9b99"); // Rudge Ramos
+    private static readonly Guid SchoolIdCasa = Guid.Parse("00b01fa8-b32f-45d7-9434-ad519e921992"); // Santo André
+    private static readonly Guid SchoolIdCas = Guid.Parse("e8c26a70-1eb6-419d-a9b5-3b6a16abcbc0"); // Santos
+    private static readonly Guid SchoolIdCascs = Guid.Parse("985c5eb2-4268-4ed6-bcd9-e2726e36fd91"); // São Caetano do Sul
+
     public ObservableCollection<TiBookingVm> Bookings { get; } = new();
 
-    // ✅ Construtor REAL: igual o padrão que você quer (recebe escola vinculada)
-    public TiDashboardPage(string name, string role, Guid schoolId)
+    public TiDashboardPage(string name, string role, Guid schoolId, string token = "")
     {
         InitializeComponent();
         BindingContext = this;
@@ -47,40 +41,68 @@ public partial class TiDashboardPage : ContentPage
         _role = string.IsNullOrWhiteSpace(role) ? "TI" : role.Trim();
         _schoolId = schoolId;
 
+        _token = token ?? string.Empty;
+
+        // ✅ Base URL robusta por plataforma
+        _apiBaseUrl = ResolveApiBaseUrl();
+
         ApplyHeader();
         ApplySchoolName();
 
-        // Mock inicial (só pra tela nascer igual ao Figma)
         SeedMock();
 
-        // Começa na aba Reservas
+        // Carrega API quando a página aparecer (melhor do que no construtor)
+        this.Appearing += async (_, __) =>
+        {
+            await EnsureTokenAsync();
+            await LoadEstoqueData();
+        };
+
         SetTab("reservas");
     }
 
-    // ✅ Mantém compatibilidade caso o XAML Previewer/Designer use o construtor vazio
-    public TiDashboardPage() : this("Usuário", "TI", Guid.Empty) { }
+    // Compatibilidade caso o XAML Previewer use construtor vazio
+    public TiDashboardPage() : this("Usuário", "TI", Guid.Empty, "") { }
+
+    private static string ResolveApiBaseUrl()
+    {
+        // Emulador Android -> 10.0.2.2
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+            return "http://10.0.2.2:5193";
+
+        // Windows / iOS / outros em debug normalmente acessam localhost
+        return "http://localhost:5193";
+    }
+
+    private async Task EnsureTokenAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_token))
+            return;
+
+        try
+        {
+            var stored = await SecureStorage.GetAsync("auth_token");
+            _token = stored ?? string.Empty;
+        }
+        catch
+        {
+            _token = string.Empty;
+        }
+    }
 
     private void ApplyHeader()
     {
-        // Nome e perfil no topo
         UserNameLabel.Text = _name;
 
-        // Padroniza o texto do perfil
         if (_role.Equals("TI", StringComparison.OrdinalIgnoreCase) ||
             _role.Equals("Profissional de TI", StringComparison.OrdinalIgnoreCase))
-        {
             UserRoleLabel.Text = "Profissional de TI";
-        }
         else
-        {
             UserRoleLabel.Text = _role;
-        }
     }
 
     private void ApplySchoolName()
     {
-        // ✅ Igual ao seu fluxo atual: mapeamento local por SchoolId
-        // (sem chamar API)
         SchoolNameLabel.Text = MapSchoolName(_schoolId);
     }
 
@@ -89,7 +111,6 @@ public partial class TiDashboardPage : ContentPage
         if (schoolId == Guid.Empty)
             return "Escola não identificada";
 
-        // ✅ Mapeamento REAL usando os GUIDs que você já declarou
         if (schoolId == SchoolIdDiadema) return "Colégio Adventista de Diadema";
         if (schoolId == SchoolIdSbc) return "Colégio Adventista de São Bernardo do Campo";
         if (schoolId == SchoolIdEaa) return "Colégio Adventista de Americanópolis";
@@ -162,12 +183,68 @@ public partial class TiDashboardPage : ContentPage
             ShowIniciarUso = true
         });
 
-        // Stats mock (depois você vai alimentar pela API, filtrando por _schoolId)
+        // Stats padrão (será atualizado pela API)
         PendentesValue.Text = "2";
         EmUsoValue.Text = "1";
         ConfirmadasValue.Text = "1";
-        DisponivelValue.Text = "32";
-        EstoqueTotalValue.Text = "40";
+        DisponivelValue.Text = "0";
+        EstoqueTotalValue.Text = "0";
+    }
+
+    // ===== API Integration =====
+    private async Task LoadEstoqueData()
+    {
+        try
+        {
+            await EnsureTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(_token))
+            {
+                EstoqueTotalValue.Text = "Sem token";
+                DisponivelValue.Text = "0";
+                return;
+            }
+
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(15)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            var response = await client.GetAsync($"{_apiBaseUrl}/chromestoque/count");
+            var json = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[TI] GET /chromestoque/count -> {(int)response.StatusCode} {response.StatusCode}");
+            System.Diagnostics.Debug.WriteLine($"[TI] Body: {json}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                EstoqueTotalValue.Text = $"Erro {(int)response.StatusCode}";
+                DisponivelValue.Text = "0";
+                return;
+            }
+
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("count", out var countElement))
+            {
+                var count = countElement.GetInt32();
+                EstoqueTotalValue.Text = count.ToString();
+
+                // por enquanto "Disponível" = total (depois você separa por status real)
+                DisponivelValue.Text = count.ToString();
+                return;
+            }
+
+            EstoqueTotalValue.Text = "Erro JSON";
+            DisponivelValue.Text = "0";
+        }
+        catch (Exception ex)
+        {
+            EstoqueTotalValue.Text = "Erro ao carregar";
+            DisponivelValue.Text = "0";
+            System.Diagnostics.Debug.WriteLine($"[TI] Exceção LoadEstoqueData: {ex}");
+        }
     }
 
     // ===== Tabs =====
@@ -192,10 +269,16 @@ public partial class TiDashboardPage : ContentPage
         btn.TextColor = active ? Colors.White : Color.FromArgb("#a8c4ff");
     }
 
-    // ===== Actions (placeholders) =====
+    // ===== Actions =====
     private async void OnLogoutClicked(object sender, EventArgs e)
     {
-        await DisplayAlert("Logout", "Aqui vamos implementar o logout real.", "OK");
+        try
+        {
+            SecureStorage.Remove("auth_token");
+        }
+        catch { /* ignore */ }
+
+        await Navigation.PopToRootAsync();
     }
 
     private async void OnConfirmarClicked(object sender, EventArgs e)
@@ -222,10 +305,97 @@ public partial class TiDashboardPage : ContentPage
         await DisplayAlert("Iniciar Uso", $"Iniciar uso {id}", "OK");
     }
 
+    // ⚠️ Por enquanto este botão "adiciona N chromebooks" (não seta total).
     private async void OnAtualizarEstoqueClicked(object sender, EventArgs e)
     {
-        // Placeholder: aqui depois vai chamar endpoint /stock/update usando _schoolId
-        await DisplayAlert("Estoque", $"Novo estoque: {NovoEstoqueEntry.Text}\nSchoolId: {_schoolId}", "OK");
+        try
+        {
+            await EnsureTokenAsync();
+
+            var novoEstoque = NovoEstoqueEntry.Text?.Trim();
+
+            if (string.IsNullOrWhiteSpace(novoEstoque) || !int.TryParse(novoEstoque, out int quantidade))
+            {
+                await DisplayAlert("Erro", "Digite um número válido de máquinas", "OK");
+                return;
+            }
+
+            if (quantidade <= 0)
+            {
+                await DisplayAlert("Erro", "Digite um número maior que 0", "OK");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_token))
+            {
+                await DisplayAlert("Erro", "Token não encontrado. Faça login novamente.", "OK");
+                return;
+            }
+
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            int sucessos = 0;
+            int falhas = 0;
+            string ultimoErro = "";
+
+            for (int i = 0; i < quantidade; i++)
+            {
+                try
+                {
+                    var chromebook = new
+                    {
+                        nomeMaquina = $"Chromebook-{DateTime.Now:yyyyMMdd}-{i + 1}",
+                        numeroSerie = $"SN-{Guid.NewGuid().ToString()[..8].ToUpperInvariant()}",
+                        modelo = "Chromebook",
+                        dataAquisicao = DateTime.Now
+                    };
+
+                    var response = await client.PostAsJsonAsync($"{_apiBaseUrl}/chromestoque", chromebook);
+                    var body = await response.Content.ReadAsStringAsync();
+
+                    System.Diagnostics.Debug.WriteLine($"[TI] POST /chromestoque -> {(int)response.StatusCode} {response.StatusCode} | {body}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        sucessos++;
+                    }
+                    else
+                    {
+                        falhas++;
+                        ultimoErro = $"{(int)response.StatusCode} {response.StatusCode}: {body}";
+                    }
+                }
+                catch (Exception itemEx)
+                {
+                    falhas++;
+                    ultimoErro = itemEx.Message;
+                    System.Diagnostics.Debug.WriteLine($"[TI] Exceção ao criar chromebook: {itemEx}");
+                }
+            }
+
+            await LoadEstoqueData();
+
+            NovoEstoqueEntry.Text = "";
+
+            string mensagem;
+            if (falhas == 0)
+                mensagem = $"✅ {sucessos}/{quantidade} máquinas adicionadas com sucesso!\nEstoque total: {EstoqueTotalValue.Text}";
+            else if (sucessos == 0)
+                mensagem = $"❌ Falha ao criar máquinas.\n\nErro: {ultimoErro}";
+            else
+                mensagem = $"⚠️ {sucessos}/{quantidade} criadas, {falhas} falharam.\nÚltimo erro: {ultimoErro}\nEstoque total: {EstoqueTotalValue.Text}";
+
+            await DisplayAlert("Resultado", mensagem, "OK");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Falha ao atualizar estoque: {ex.Message}", "OK");
+        }
     }
 }
 
