@@ -217,15 +217,62 @@ public partial class TiDashboardPage : ContentPage
             var json = await response.Content.ReadAsStringAsync();
 
             System.Diagnostics.Debug.WriteLine($"[TI] GET /reservas/pendentes -> {(int)response.StatusCode} {response.StatusCode}");
+            System.Diagnostics.Debug.WriteLine($"[TI] Response Body: {json}");
 
             if (!response.IsSuccessStatusCode)
             {
-                // Se falhar, mantém dados mock
+                System.Diagnostics.Debug.WriteLine($"[TI] Erro ao buscar reservas: {json}");
+                // Se falhar, mantém dados mock mas limpa a lista
+                Bookings.Clear();
+                PendentesValue.Text = "0";
                 return;
             }
 
-            var reservas = System.Text.Json.JsonSerializer.Deserialize<List<ReservaResponseDto>>(json)
-                ?? new List<ReservaResponseDto>();
+            // Deserializar resposta com opções que aceitam PascalCase
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true // Aceita tanto camelCase quanto PascalCase
+            };
+
+            List<ReservaResponseDto> reservas;
+            
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                
+                if (doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Array)
+                {
+                    // Resposta direta como array
+                    reservas = System.Text.Json.JsonSerializer.Deserialize<List<ReservaResponseDto>>(json, options)
+                        ?? new List<ReservaResponseDto>();
+                }
+                else if (doc.RootElement.TryGetProperty("reservas", out var reservasElement))
+                {
+                    // Resposta com envelope { schoolId, reservas, total }
+                    reservas = System.Text.Json.JsonSerializer.Deserialize<List<ReservaResponseDto>>(reservasElement.GetRawText(), options)
+                        ?? new List<ReservaResponseDto>();
+                }
+                else
+                {
+                    reservas = new List<ReservaResponseDto>();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[TI] Erro ao deserializar: {ex.Message}");
+                // Fallback: tentar deserializar direto
+                reservas = System.Text.Json.JsonSerializer.Deserialize<List<ReservaResponseDto>>(json, options)
+                    ?? new List<ReservaResponseDto>();
+            }
+
+            // Log detalhado para debug
+            if (reservas.Count > 0)
+            {
+                var primeira = reservas[0];
+                System.Diagnostics.Debug.WriteLine($"[TI] Primeira reserva - Id: {primeira.Id}, ProfessorNome: {primeira.ProfessorNome}, DataReserva: {primeira.DataReserva}, Quantidade: {primeira.Quantidade}, Status: {primeira.Status}");
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[TI] Reservas encontradas: {reservas.Count}");
 
             Bookings.Clear();
 
@@ -249,13 +296,35 @@ public partial class TiDashboardPage : ContentPage
                     _ => Colors.Gray
                 };
 
+                // Validar se os dados estão corretos antes de adicionar
+                if (reserva.Id == Guid.Empty)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[TI] Reserva com ID vazio ignorada");
+                    continue;
+                }
+
+                // Formatar data corretamente (pode estar em UTC)
+                var dataFormatada = reserva.DataReserva == default 
+                    ? "Data inválida" 
+                    : reserva.DataReserva.ToString("dd/MM/yyyy");
+
+                // Formatar horário
+                var horarioFormatado = reserva.HorarioInicio == default || reserva.HorarioFim == default
+                    ? "Horário inválido"
+                    : $"{reserva.HorarioInicio:hh\\:mm} - {reserva.HorarioFim:hh\\:mm}";
+
+                // Validar quantidade
+                var quantidadeTexto = reserva.Quantidade <= 0 
+                    ? "0 unidades" 
+                    : $"{reserva.Quantidade} unidades";
+
                 Bookings.Add(new TiBookingVm
                 {
                     Id = reserva.Id.ToString(),
-                    ProfessorName = reserva.ProfessorNome,
-                    DateText = reserva.DataReserva.ToString("dd/MM/yyyy"),
-                    Time = $"{reserva.HorarioInicio:hh\\:mm} - {reserva.HorarioFim:hh\\:mm}",
-                    QuantityText = $"{reserva.Quantidade} unidades",
+                    ProfessorName = string.IsNullOrWhiteSpace(reserva.ProfessorNome) ? "Professor" : reserva.ProfessorNome,
+                    DateText = dataFormatada,
+                    Time = horarioFormatado,
+                    QuantityText = quantidadeTexto,
                     StatusText = statusText,
                     StatusColor = statusColor,
                     ShowConfirm = reserva.Status == 1, // Pendente
@@ -343,6 +412,12 @@ public partial class TiDashboardPage : ContentPage
         SetTabButton(TabReservasBtn, tab == "reservas");
         SetTabButton(TabAgendaBtn, tab == "agenda");
         SetTabButton(TabEstoqueBtn, tab == "estoque");
+
+        // Recarregar reservas quando a aba de reservas for selecionada
+        if (tab == "reservas")
+        {
+            _ = LoadReservasPendentes();
+        }
     }
 
     private static void SetTabButton(Button btn, bool active)
@@ -517,15 +592,34 @@ public class ChromestoqueResponseDto
 
 public class ReservaResponseDto
 {
+    [System.Text.Json.Serialization.JsonPropertyName("id")]
     public Guid Id { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("professorId")]
     public Guid ProfessorId { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("professorNome")]
     public string ProfessorNome { get; set; } = string.Empty;
+    
+    [System.Text.Json.Serialization.JsonPropertyName("schoolId")]
     public Guid SchoolId { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("dataReserva")]
     public DateTime DataReserva { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("horarioInicio")]
     public TimeSpan HorarioInicio { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("horarioFim")]
     public TimeSpan HorarioFim { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("quantidade")]
     public int Quantidade { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("status")]
     public int Status { get; set; } // 1=Pendente, 2=Confirmada, 3=Recusada, 4=EmUso, 5=Concluida
+    
+    [System.Text.Json.Serialization.JsonPropertyName("dataCriacao")]
     public DateTime DataCriacao { get; set; }
 }
 

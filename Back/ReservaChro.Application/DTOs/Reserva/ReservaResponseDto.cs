@@ -12,6 +12,6 @@ public sealed class ReservaResponseDto
     public TimeSpan HorarioInicio { get; init; }
     public TimeSpan HorarioFim { get; init; }
     public int Quantidade { get; init; }
-    public StatusReserva Status { get; init; }
+    public int Status { get; init; } // Serializado como int (1=Pendente, 2=Confirmada, etc)
     public DateTime DataCriacao { get; init; }
 }

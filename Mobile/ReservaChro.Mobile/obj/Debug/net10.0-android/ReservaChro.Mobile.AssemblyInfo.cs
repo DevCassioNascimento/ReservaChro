@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ReservaChro.Mobile")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+c5d74799afb0cbc727f27b308a0ded7d6be9ff44")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+cb79bee213ad5e9e9c25800086c0a7ba2f7a92ef")]
 [assembly: System.Reflection.AssemblyProductAttribute("ReservaChro.Mobile")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ReservaChro.Mobile")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

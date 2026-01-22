@@ -98,7 +98,8 @@ public partial class LoginPage : ContentPage
                     new ProfessorSchoolPage(
                         schoolId: schoolId.Value,
                         userName: name,
-                        roleName: "Professor"
+                        roleName: "Professor",
+                        token: token
                     )
                 );
                 return;

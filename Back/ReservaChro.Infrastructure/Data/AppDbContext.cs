@@ -134,7 +134,10 @@ public sealed class AppDbContext : DbContext
                 .IsRequired();
 
             entity.Property(r => r.DataReserva)
-                .IsRequired();
+                .IsRequired()
+                .HasConversion(
+                    v => v.ToUniversalTime(),
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
             entity.Property(r => r.HorarioInicio)
                 .IsRequired();
@@ -150,7 +153,10 @@ public sealed class AppDbContext : DbContext
                 .HasConversion<int>();
 
             entity.Property(r => r.DataCriacao)
-                .IsRequired();
+                .IsRequired()
+                .HasConversion(
+                    v => v.ToUniversalTime(),
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
             // Índices para melhor performance
             entity.HasIndex(r => new { r.SchoolId, r.DataReserva, r.Status });

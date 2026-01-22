@@ -44,7 +44,10 @@ public sealed class Reserva
 
         ProfessorId = professorId;
         SchoolId = schoolId;
-        DataReserva = dataReserva.Date; // Apenas a data, sem hora
+        // Garantir que a data está em UTC para PostgreSQL
+        DataReserva = dataReserva.Kind == DateTimeKind.Utc 
+            ? dataReserva.Date 
+            : DateTime.SpecifyKind(dataReserva.Date, DateTimeKind.Utc);
         HorarioInicio = horarioInicio;
         HorarioFim = horarioFim;
         Quantidade = quantidade;

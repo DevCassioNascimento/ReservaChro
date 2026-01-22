@@ -1,9 +1,15 @@
 // Caminho: ReservaChro\Mobile\ReservaChro.Mobile\Views\ProfessorSchoolPage.xaml.cs
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+
 namespace ReservaChro.Mobile.Views;
 
 public partial class ProfessorSchoolPage : ContentPage
 {
     private readonly Guid _schoolId;
+    private string _token;
+    private string _apiBaseUrl;
 
     // Se você já tem IDs fixos no app, mantenha aqui (ajuste depois para vir do backend se quiser)
     private static readonly Guid SchoolIdDiadema = Guid.Parse("22222222-2222-2222-2222-222222222222"); // Diadema
@@ -120,11 +126,15 @@ public partial class ProfessorSchoolPage : ContentPage
     };
 
     // Construtor principal (novo)
-    public ProfessorSchoolPage(Guid schoolId, string userName = "Usuário", string roleName = "Perfil")
+    public ProfessorSchoolPage(Guid schoolId, string userName = "Usuário", string roleName = "Perfil", string token = "")
     {
         InitializeComponent();
 
         _schoolId = schoolId;
+        _token = token ?? string.Empty;
+
+        // Base URL da API
+        _apiBaseUrl = ResolveApiBaseUrl();
 
         UserNameLabel.Text = userName;
         UserRoleLabel.Text = roleName;
@@ -137,6 +147,41 @@ public partial class ProfessorSchoolPage : ContentPage
             "07:00", "08:00", "09:00", "10:00",
             "11:00", "13:00", "14:00", "15:00", "16:00"
         };
+
+        // Carregar token se não foi passado
+        this.Appearing += async (_, __) =>
+        {
+            await EnsureTokenAsync();
+        };
+
+        // Data mínima: hoje
+        DatePickerReserva.MinimumDate = DateTime.Today;
+    }
+
+    private static string ResolveApiBaseUrl()
+    {
+        // Emulador Android -> 10.0.2.2
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+            return "http://10.0.2.2:5193";
+
+        // Windows / iOS / outros em debug normalmente acessam localhost
+        return "http://localhost:5193";
+    }
+
+    private async Task EnsureTokenAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_token))
+            return;
+
+        try
+        {
+            var stored = await SecureStorage.GetAsync("auth_token");
+            _token = stored ?? string.Empty;
+        }
+        catch
+        {
+            _token = string.Empty;
+        }
     }
 
     // (Opcional) Construtor de compatibilidade, caso algum lugar ainda chame sem SchoolId
@@ -163,27 +208,99 @@ public partial class ProfessorSchoolPage : ContentPage
 
     private async void OnConfirmarClicked(object sender, EventArgs e)
     {
-        // Placeholder: por enquanto só validação simples
-        if (HorarioPicker.SelectedItem is null)
+        try
         {
-            await DisplayAlert("Atenção", "Selecione um horário.", "OK");
-            return;
-        }
+            await EnsureTokenAsync();
 
-        if (!int.TryParse(QuantidadeEntry.Text, out var qtd) || qtd <= 0)
+            // Validações
+            if (HorarioPicker.SelectedItem is null)
+            {
+                await DisplayAlert("Atenção", "Selecione um horário.", "OK");
+                return;
+            }
+
+            if (!int.TryParse(QuantidadeEntry.Text, out var qtd) || qtd <= 0)
+            {
+                await DisplayAlert("Atenção", "Informe uma quantidade válida.", "OK");
+                return;
+            }
+
+            if (qtd > 40)
+            {
+                await DisplayAlert("Atenção", "Quantidade máxima permitida: 40.", "OK");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_token))
+            {
+                await DisplayAlert("Erro", "Token não encontrado. Faça login novamente.", "OK");
+                return;
+            }
+
+            // Converter horário selecionado para TimeSpan
+            var horarioSelecionado = HorarioPicker.SelectedItem.ToString();
+            if (!TimeSpan.TryParse(horarioSelecionado, out var horarioInicio))
+            {
+                await DisplayAlert("Erro", "Horário inválido.", "OK");
+                return;
+            }
+
+            // Horário fim: 1 hora após o início
+            var horarioFim = horarioInicio.Add(TimeSpan.FromHours(1));
+
+            // Data selecionada - garantir que está em UTC
+            if (DatePickerReserva.Date is not DateTime dataReserva)
+            {
+                await DisplayAlert("Atenção", "Selecione uma data.", "OK");
+                return;
+            }
+            var dataReservaUtc = DateTime.SpecifyKind(dataReserva, DateTimeKind.Utc);
+
+            // Criar reserva via API
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+
+            // O backend espera TimeSpan, mas JSON serializa como string no formato "HH:mm:ss"
+            var request = new
+            {
+                dataReserva = dataReservaUtc,
+                horarioInicio = horarioInicio,
+                horarioFim = horarioFim,
+                quantidade = qtd
+            };
+
+            var response = await client.PostAsJsonAsync($"{_apiBaseUrl}/reservas", request);
+            var body = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[Professor] POST /reservas -> {(int)response.StatusCode} {response.StatusCode} | {body}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await DisplayAlert("Sucesso", $"✅ Reserva criada com sucesso!\n\nAguardando confirmação do TI.", "OK");
+                
+                // Limpar campos
+                QuantidadeEntry.Text = "";
+                HorarioPicker.SelectedItem = null;
+            }
+            else
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                var mensagemErro = doc.RootElement.TryGetProperty("message", out var msgElement)
+                    ? msgElement.GetString()
+                    : $"Erro {(int)response.StatusCode}";
+
+                await DisplayAlert("Erro", $"❌ Falha ao criar reserva.\n\n{mensagemErro}", "OK");
+            }
+        }
+        catch (Exception ex)
         {
-            await DisplayAlert("Atenção", "Informe uma quantidade válida.", "OK");
-            return;
+            await DisplayAlert("Erro", $"Falha ao criar reserva: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[Professor] Exceção OnConfirmarClicked: {ex}");
         }
-
-        // Mantive a mesma regra que você já tinha: limite “hardcoded”
-        if (qtd > 40)
-        {
-            await DisplayAlert("Atenção", "Quantidade máxima permitida: 40.", "OK");
-            return;
-        }
-
-        await DisplayAlert("OK", "Agendamento (simulado) confirmado.", "Fechar");
     }
 
     private async void OnMinhasReservasClicked(object sender, EventArgs e)
