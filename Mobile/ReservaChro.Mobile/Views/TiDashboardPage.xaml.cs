@@ -495,8 +495,66 @@ public partial class TiDashboardPage : ContentPage
 
     private async void OnRecusarClicked(object sender, EventArgs e)
     {
-        var id = (sender as Button)?.CommandParameter?.ToString();
-        await DisplayAlert("Recusar", $"Recusar reserva {id}", "OK");
+        var idString = (sender as Button)?.CommandParameter?.ToString();
+        if (string.IsNullOrWhiteSpace(idString) || !Guid.TryParse(idString, out var reservaId))
+        {
+            await DisplayAlert("Erro", "ID da reserva inválido.", "OK");
+            return;
+        }
+
+        // Confirmar ação
+        var confirmar = await DisplayAlert(
+            "Confirmar Recusa",
+            "Tem certeza que deseja recusar esta reserva?",
+            "Sim, Recusar",
+            "Cancelar");
+
+        if (!confirmar)
+            return;
+
+        try
+        {
+            await EnsureTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(_token))
+            {
+                await DisplayAlert("Erro", "Token não encontrado. Faça login novamente.", "OK");
+                return;
+            }
+
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            var response = await client.PutAsync($"{_apiBaseUrl}/reservas/{reservaId}/recusar", null);
+            var body = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[TI] PUT /reservas/{reservaId}/recusar -> {(int)response.StatusCode} {response.StatusCode} | {body}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await DisplayAlert("Sucesso", "✅ Reserva recusada com sucesso!", "OK");
+                // Recarregar lista de reservas (o card será removido automaticamente pois só mostra pendentes)
+                await LoadReservasPendentes();
+            }
+            else
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                var mensagemErro = doc.RootElement.TryGetProperty("message", out var msgElement)
+                    ? msgElement.GetString()
+                    : $"Erro {(int)response.StatusCode}";
+
+                await DisplayAlert("Erro", $"❌ Falha ao recusar reserva.\n\n{mensagemErro}", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Falha ao recusar reserva: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[TI] Exceção OnRecusarClicked: {ex}");
+        }
     }
 
     private async void OnConfirmarDevolucaoClicked(object sender, EventArgs e)

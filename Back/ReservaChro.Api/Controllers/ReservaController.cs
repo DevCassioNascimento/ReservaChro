@@ -208,6 +208,30 @@ public sealed class ReservaController : ControllerBase
     }
 
     /// <summary>
+    /// Lista reservas do professor logado (apenas para Professores)
+    /// </summary>
+    [HttpGet("minhas")]
+    [Authorize(Roles = nameof(Role.Professor))]
+    public async Task<IActionResult> GetMinhas()
+    {
+        if (!TryGetSchoolId(out var schoolId))
+            return Unauthorized(new { message = "SchoolId não encontrado no token." });
+
+        if (!TryGetUserId(out var professorId))
+            return Unauthorized(new { message = "UserId não encontrado no token." });
+
+        try
+        {
+            var reservas = await _service.GetByProfessorAsync(professorId, schoolId);
+            return Ok(reservas);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Erro ao listar suas reservas.", detail = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Lista TODAS as reservas da escola (debug - apenas para TI)
     /// </summary>
     [HttpGet("todas")]

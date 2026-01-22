@@ -11,6 +11,7 @@ public interface IReservaService
     Task<ReservaResponseDto> CreateAsync(CreateReservaRequestDto request, Guid professorId, Guid schoolId);
     Task<List<ReservaResponseDto>> GetPendentesBySchoolAsync(Guid schoolId);
     Task<List<ReservaResponseDto>> GetTodasBySchoolAsync(Guid schoolId);
+    Task<List<ReservaResponseDto>> GetByProfessorAsync(Guid professorId, Guid schoolId);
     Task<ReservaResponseDto?> GetByIdAsync(Guid id);
     Task<bool> ConfirmarReservaAsync(Guid id, Guid schoolId);
     Task<bool> RecusarReservaAsync(Guid id, Guid schoolId);
@@ -156,6 +157,41 @@ public sealed class ReservaService : IReservaService
             HorarioFim = r.HorarioFim,
             Quantidade = r.Quantidade,
             Status = (int)r.Status,
+            DataCriacao = r.DataCriacao
+        }).ToList();
+    }
+
+    public async Task<List<ReservaResponseDto>> GetByProfessorAsync(Guid professorId, Guid schoolId)
+    {
+        if (professorId == Guid.Empty || schoolId == Guid.Empty) 
+            return new List<ReservaResponseDto>();
+
+        var reservas = await Reservas
+            .AsNoTracking()
+            .Where(r => r.ProfessorId == professorId && r.SchoolId == schoolId)
+            .OrderByDescending(r => r.DataCriacao)
+            .ThenBy(r => r.DataReserva)
+            .ThenBy(r => r.HorarioInicio)
+            .ToListAsync();
+
+        // Buscar nome do professor
+        var professor = await _dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == professorId);
+
+        var nomeProfessor = professor?.Name ?? "Professor";
+
+        return reservas.Select(r => new ReservaResponseDto
+        {
+            Id = r.Id,
+            ProfessorId = r.ProfessorId,
+            ProfessorNome = nomeProfessor,
+            SchoolId = r.SchoolId,
+            DataReserva = r.DataReserva,
+            HorarioInicio = r.HorarioInicio,
+            HorarioFim = r.HorarioFim,
+            Quantidade = r.Quantidade,
+            Status = (int)r.Status, // Converter enum para int para serialização JSON
             DataCriacao = r.DataCriacao
         }).ToList();
     }

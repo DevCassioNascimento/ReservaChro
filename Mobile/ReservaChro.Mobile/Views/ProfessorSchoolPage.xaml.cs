@@ -305,7 +305,9 @@ public partial class ProfessorSchoolPage : ContentPage
 
     private async void OnMinhasReservasClicked(object sender, EventArgs e)
     {
-        await DisplayAlert("Em breve", "Tela de 'Minhas Reservas' será a próxima.", "OK");
+        await EnsureTokenAsync();
+        var reservasPage = new ProfessorReservasPage(_token);
+        await Navigation.PushAsync(reservasPage);
     }
 
     private async void OnLogoutClicked(object sender, EventArgs e)

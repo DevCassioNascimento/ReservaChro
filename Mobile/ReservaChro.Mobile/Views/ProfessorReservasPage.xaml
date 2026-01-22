@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ReservaChro.Mobile.Views.ProfessorReservasPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Minhas Reservas"
+    BackgroundColor="#06121f">
+
+    <Grid RowDefinitions="70, *">
+
+        <!-- TOP BAR -->
+        <Grid Grid.Row="0"
+              BackgroundColor="#071a2b"
+              Padding="16"
+              ColumnDefinitions="Auto,*,Auto">
+
+            <!-- Left: Back button -->
+            <Button Grid.Column="0"
+                    Text="←"
+                    BackgroundColor="#0b2a4a"
+                    TextColor="White"
+                    CornerRadius="12"
+                    HeightRequest="40"
+                    WidthRequest="50"
+                    Clicked="OnVoltarClicked"
+                    VerticalOptions="Center"/>
+
+            <!-- Center: Title -->
+            <Label Grid.Column="1"
+                   Text="Minhas Reservas"
+                   TextColor="White"
+                   FontAttributes="Bold"
+                   FontSize="18"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+
+            <!-- Right: Refresh -->
+            <Button Grid.Column="2"
+                    Text="🔄"
+                    BackgroundColor="#0b2a4a"
+                    TextColor="White"
+                    CornerRadius="12"
+                    HeightRequest="40"
+                    WidthRequest="50"
+                    Clicked="OnRefreshClicked"
+                    VerticalOptions="Center"/>
+        </Grid>
+
+        <!-- BODY -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="18" Spacing="16">
+
+                <!-- Status Summary -->
+                <Frame CornerRadius="16"
+                       BackgroundColor="#0b1b2c"
+                       HasShadow="True"
+                       Padding="16">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="📊 Resumo"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               FontSize="16"/>
+                        <HorizontalStackLayout Spacing="20">
+                            <VerticalStackLayout Spacing="4">
+                                <Label x:Name="PendentesLabel"
+                                       Text="0"
+                                       TextColor="#ffd93d"
+                                       FontSize="24"
+                                       FontAttributes="Bold"/>
+                                <Label Text="Pendentes"
+                                       TextColor="#8fb6ff"
+                                       FontSize="12"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label x:Name="ConfirmadasLabel"
+                                       Text="0"
+                                       TextColor="#6bcf7f"
+                                       FontSize="24"
+                                       FontAttributes="Bold"/>
+                                <Label Text="Confirmadas"
+                                       TextColor="#8fb6ff"
+                                       FontSize="12"/>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label x:Name="RecusadasLabel"
+                                       Text="0"
+                                       TextColor="#ff6b6b"
+                                       FontSize="24"
+                                       FontAttributes="Bold"/>
+                                <Label Text="Recusadas"
+                                       TextColor="#8fb6ff"
+                                       FontSize="12"/>
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Loading indicator -->
+                <ActivityIndicator x:Name="LoadingIndicator"
+                                   IsRunning="False"
+                                   IsVisible="False"
+                                   Color="White"
+                                   HeightRequest="50"/>
+
+                <!-- Empty state -->
+                <Label x:Name="EmptyStateLabel"
+                       Text="Você ainda não fez nenhuma reserva."
+                       TextColor="#8fb6ff"
+                       FontSize="14"
+                       HorizontalOptions="Center"
+                       IsVisible="False"
+                       Margin="0,40,0,0"/>
+
+                <!-- Reservas List -->
+                <CollectionView x:Name="ReservasCollectionView"
+                                ItemsSource="{Binding Reservas}"
+                                SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame CornerRadius="16"
+                                   BackgroundColor="#0b1b2c"
+                                   HasShadow="True"
+                                   Padding="16"
+                                   Margin="0,0,0,12">
+                                <VerticalStackLayout Spacing="10">
+                                    <!-- Header: Status -->
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="{Binding StatusText}"
+                                               TextColor="{Binding StatusColor}"
+                                               FontAttributes="Bold"
+                                               FontSize="14"/>
+                                        <Label Text="{Binding DataText}"
+                                               TextColor="#8fb6ff"
+                                               FontSize="12"
+                                               HorizontalOptions="EndAndExpand"/>
+                                    </HorizontalStackLayout>
+
+                                    <!-- Divider -->
+                                    <BoxView HeightRequest="1"
+                                             BackgroundColor="#2a3a57"
+                                             Margin="0,4,0,4"/>
+
+                                    <!-- Details -->
+                                    <VerticalStackLayout Spacing="6">
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Label Text="📅"
+                                                   TextColor="#8fb6ff"
+                                                   FontSize="14"/>
+                                            <Label Text="{Binding DateText}"
+                                                   TextColor="White"
+                                                   FontSize="13"/>
+                                        </HorizontalStackLayout>
+
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Label Text="🕒"
+                                                   TextColor="#8fb6ff"
+                                                   FontSize="14"/>
+                                            <Label Text="{Binding Time}"
+                                                   TextColor="White"
+                                                   FontSize="13"/>
+                                        </HorizontalStackLayout>
+
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Label Text="💻"
+                                                   TextColor="#8fb6ff"
+                                                   FontSize="14"/>
+                                            <Label Text="{Binding QuantityText}"
+                                                   TextColor="White"
+                                                   FontSize="13"/>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>
