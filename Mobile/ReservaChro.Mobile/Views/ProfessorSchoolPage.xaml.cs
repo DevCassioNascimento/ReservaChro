@@ -310,6 +310,119 @@ public partial class ProfessorSchoolPage : ContentPage
         await Navigation.PushAsync(reservasPage);
     }
 
+    private async void OnAlterarSenhaClicked(object sender, EventArgs e)
+    {
+        await EnsureTokenAsync();
+
+        if (string.IsNullOrWhiteSpace(_token))
+        {
+            await DisplayAlert("Erro", "Token não encontrado. Faça login novamente.", "OK");
+            return;
+        }
+
+        // Solicitar senha atual
+        var senhaAtual = await DisplayPromptAsync(
+            "Alterar Senha",
+            "Digite sua senha atual:",
+            "OK",
+            "Cancelar",
+            "",
+            -1,
+            Keyboard.Default,
+            "");
+
+        if (string.IsNullOrWhiteSpace(senhaAtual))
+            return;
+
+        // Solicitar nova senha
+        var novaSenha = await DisplayPromptAsync(
+            "Alterar Senha",
+            "Digite a nova senha (mínimo 4 caracteres):",
+            "OK",
+            "Cancelar",
+            "",
+            -1,
+            Keyboard.Default,
+            "");
+
+        if (string.IsNullOrWhiteSpace(novaSenha))
+            return;
+
+        if (novaSenha.Length < 4)
+        {
+            await DisplayAlert("Erro", "A nova senha deve ter pelo menos 4 caracteres.", "OK");
+            return;
+        }
+
+        // Confirmar nova senha
+        var confirmarSenha = await DisplayPromptAsync(
+            "Alterar Senha",
+            "Confirme a nova senha:",
+            "OK",
+            "Cancelar",
+            "",
+            -1,
+            Keyboard.Default,
+            "");
+
+        if (string.IsNullOrWhiteSpace(confirmarSenha))
+            return;
+
+        if (novaSenha != confirmarSenha)
+        {
+            await DisplayAlert("Erro", "As senhas não coincidem.", "OK");
+            return;
+        }
+
+        // Enviar requisição para alterar senha
+        try
+        {
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+
+            var request = new
+            {
+                currentPassword = senhaAtual,
+                newPassword = novaSenha
+            };
+
+            var response = await client.PutAsJsonAsync($"{_apiBaseUrl}/auth/change-password", request);
+            var body = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[PROF] PUT /auth/change-password -> {(int)response.StatusCode} {response.StatusCode} | {body}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await DisplayAlert("Sucesso", "✅ Senha alterada com sucesso!", "OK");
+            }
+            else
+            {
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(body);
+                    var mensagemErro = doc.RootElement.TryGetProperty("message", out var msgElement)
+                        ? msgElement.GetString()
+                        : $"Erro {(int)response.StatusCode}";
+
+                    await DisplayAlert("Erro", $"❌ Falha ao alterar senha.\n\n{mensagemErro}", "OK");
+                }
+                catch
+                {
+                    await DisplayAlert("Erro", $"❌ Falha ao alterar senha.\n\nErro {(int)response.StatusCode}", "OK");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Falha ao alterar senha: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[PROF] Exceção OnAlterarSenhaClicked: {ex}");
+        }
+    }
+
     private async void OnLogoutClicked(object sender, EventArgs e)
     {
         // Placeholder: depois vamos limpar token e voltar pro login

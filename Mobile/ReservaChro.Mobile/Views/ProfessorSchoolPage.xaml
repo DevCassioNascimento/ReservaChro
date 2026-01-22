@@ -144,6 +144,13 @@
                         HeightRequest="48"
                         Clicked="OnMinhasReservasClicked"/>
 
+                <Button Text="Alterar Senha"
+                        BackgroundColor="#2a3a57"
+                        TextColor="White"
+                        CornerRadius="14"
+                        HeightRequest="48"
+                        Clicked="OnAlterarSenhaClicked"/>
+
             </VerticalStackLayout>
         </ScrollView>
 

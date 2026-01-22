@@ -1,10 +1,10 @@
-<api type="debug" assembly-name="ReservaChro.Mobile" mvid="bb980039fdd74aefbef06f1ad455f158">
+<api type="debug" assembly-name="ReservaChro.Mobile" mvid="5113bcd8cd5542beb3fa9da1925bd235">
   <java-to-managed>
-    <entry java-name="crc6424c7734d665624b9/MainActivity" managed-name="ReservaChro.Mobile.MainActivity, ReservaChro.Mobile" managed-type-token-id="33554445" />
-    <entry java-name="crc6424c7734d665624b9/MainApplication" managed-name="ReservaChro.Mobile.MainApplication, ReservaChro.Mobile" managed-type-token-id="33554446" />
+    <entry java-name="crc6424c7734d665624b9/MainActivity" managed-name="ReservaChro.Mobile.MainActivity, ReservaChro.Mobile" managed-type-token-id="33554446" />
+    <entry java-name="crc6424c7734d665624b9/MainApplication" managed-name="ReservaChro.Mobile.MainApplication, ReservaChro.Mobile" managed-type-token-id="33554447" />
   </java-to-managed>
   <managed-to-java>
-    <entry java-name="crc6424c7734d665624b9/MainActivity" managed-name="ReservaChro.Mobile.MainActivity, ReservaChro.Mobile" managed-type-token-id="33554445" />
-    <entry java-name="crc6424c7734d665624b9/MainApplication" managed-name="ReservaChro.Mobile.MainApplication, ReservaChro.Mobile" managed-type-token-id="33554446" />
+    <entry java-name="crc6424c7734d665624b9/MainActivity" managed-name="ReservaChro.Mobile.MainActivity, ReservaChro.Mobile" managed-type-token-id="33554446" />
+    <entry java-name="crc6424c7734d665624b9/MainApplication" managed-name="ReservaChro.Mobile.MainApplication, ReservaChro.Mobile" managed-type-token-id="33554447" />
   </managed-to-java>
 </api>
