@@ -73,6 +73,10 @@ public sealed class AppDbContext : DbContext
 
             entity.HasIndex(s => s.Code)
                 .IsUnique();
+
+            entity.Property(s => s.QuantidadeEstoque)
+                .IsRequired()
+                .HasDefaultValue(0);
         });
 
         // CHROMESTOQUE

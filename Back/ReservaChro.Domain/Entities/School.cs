@@ -10,6 +10,9 @@ public sealed class School
     // Opcional mas útil: identificador curto (ex: "APSe-ABC", "SANTOS-01")
     public string Code { get; private set; } = string.Empty;
 
+    // Quantidade total de chromebooks no estoque da escola
+    public int QuantidadeEstoque { get; private set; } = 0;
+
     // EF Core
     private School() { }
 
@@ -20,5 +23,14 @@ public sealed class School
 
         Name = name.Trim();
         Code = code.Trim();
+        QuantidadeEstoque = 0;
+    }
+
+    public void AtualizarQuantidadeEstoque(int quantidade)
+    {
+        if (quantidade < 0)
+            throw new ArgumentException("A quantidade de estoque não pode ser negativa.", nameof(quantidade));
+        
+        QuantidadeEstoque = quantidade;
     }
 }

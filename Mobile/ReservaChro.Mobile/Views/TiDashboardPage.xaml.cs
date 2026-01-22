@@ -1,7 +1,9 @@
 // ReservaChro\Mobile\ReservaChro.Mobile\Views\TiDashboardPage.xaml.cs
 using System.Collections.ObjectModel;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace ReservaChro.Mobile.Views;
 
@@ -212,10 +214,10 @@ public partial class TiDashboardPage : ContentPage
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
 
-            var response = await client.GetAsync($"{_apiBaseUrl}/chromestoque/count");
+            var response = await client.GetAsync($"{_apiBaseUrl}/school/estoque");
             var json = await response.Content.ReadAsStringAsync();
 
-            System.Diagnostics.Debug.WriteLine($"[TI] GET /chromestoque/count -> {(int)response.StatusCode} {response.StatusCode}");
+            System.Diagnostics.Debug.WriteLine($"[TI] GET /school/estoque -> {(int)response.StatusCode} {response.StatusCode}");
             System.Diagnostics.Debug.WriteLine($"[TI] Body: {json}");
 
             if (!response.IsSuccessStatusCode)
@@ -226,13 +228,13 @@ public partial class TiDashboardPage : ContentPage
             }
 
             using var doc = System.Text.Json.JsonDocument.Parse(json);
-            if (doc.RootElement.TryGetProperty("count", out var countElement))
+            if (doc.RootElement.TryGetProperty("quantidade", out var quantidadeElement))
             {
-                var count = countElement.GetInt32();
-                EstoqueTotalValue.Text = count.ToString();
+                var quantidade = quantidadeElement.GetInt32();
+                EstoqueTotalValue.Text = quantidade.ToString();
 
                 // por enquanto "Disponível" = total (depois você separa por status real)
-                DisponivelValue.Text = count.ToString();
+                DisponivelValue.Text = quantidade.ToString();
                 return;
             }
 
@@ -305,7 +307,7 @@ public partial class TiDashboardPage : ContentPage
         await DisplayAlert("Iniciar Uso", $"Iniciar uso {id}", "OK");
     }
 
-    // ⚠️ Por enquanto este botão "adiciona N chromebooks" (não seta total).
+    // Atualiza a quantidade total de estoque da escola (simplificado)
     private async void OnAtualizarEstoqueClicked(object sender, EventArgs e)
     {
         try
@@ -314,15 +316,15 @@ public partial class TiDashboardPage : ContentPage
 
             var novoEstoque = NovoEstoqueEntry.Text?.Trim();
 
-            if (string.IsNullOrWhiteSpace(novoEstoque) || !int.TryParse(novoEstoque, out int quantidade))
+            if (string.IsNullOrWhiteSpace(novoEstoque) || !int.TryParse(novoEstoque, out int quantidadeDesejada))
             {
                 await DisplayAlert("Erro", "Digite um número válido de máquinas", "OK");
                 return;
             }
 
-            if (quantidade <= 0)
+            if (quantidadeDesejada < 0)
             {
-                await DisplayAlert("Erro", "Digite um número maior que 0", "OK");
+                await DisplayAlert("Erro", "Digite um número maior ou igual a 0", "OK");
                 return;
             }
 
@@ -339,64 +341,49 @@ public partial class TiDashboardPage : ContentPage
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
 
-            int sucessos = 0;
-            int falhas = 0;
-            string ultimoErro = "";
+            // Atualizar estoque diretamente
+            var request = new { quantidade = quantidadeDesejada };
+            var response = await client.PutAsJsonAsync($"{_apiBaseUrl}/school/estoque", request);
+            var body = await response.Content.ReadAsStringAsync();
 
-            for (int i = 0; i < quantidade; i++)
-            {
-                try
-                {
-                    var chromebook = new
-                    {
-                        nomeMaquina = $"Chromebook-{DateTime.Now:yyyyMMdd}-{i + 1}",
-                        numeroSerie = $"SN-{Guid.NewGuid().ToString()[..8].ToUpperInvariant()}",
-                        modelo = "Chromebook",
-                        dataAquisicao = DateTime.Now
-                    };
+            System.Diagnostics.Debug.WriteLine($"[TI] PUT /school/estoque -> {(int)response.StatusCode} {response.StatusCode} | {body}");
 
-                    var response = await client.PostAsJsonAsync($"{_apiBaseUrl}/chromestoque", chromebook);
-                    var body = await response.Content.ReadAsStringAsync();
-
-                    System.Diagnostics.Debug.WriteLine($"[TI] POST /chromestoque -> {(int)response.StatusCode} {response.StatusCode} | {body}");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        sucessos++;
-                    }
-                    else
-                    {
-                        falhas++;
-                        ultimoErro = $"{(int)response.StatusCode} {response.StatusCode}: {body}";
-                    }
-                }
-                catch (Exception itemEx)
-                {
-                    falhas++;
-                    ultimoErro = itemEx.Message;
-                    System.Diagnostics.Debug.WriteLine($"[TI] Exceção ao criar chromebook: {itemEx}");
-                }
-            }
-
+            // Recarregar dados do estoque
             await LoadEstoqueData();
 
             NovoEstoqueEntry.Text = "";
 
-            string mensagem;
-            if (falhas == 0)
-                mensagem = $"✅ {sucessos}/{quantidade} máquinas adicionadas com sucesso!\nEstoque total: {EstoqueTotalValue.Text}";
-            else if (sucessos == 0)
-                mensagem = $"❌ Falha ao criar máquinas.\n\nErro: {ultimoErro}";
+            if (response.IsSuccessStatusCode)
+            {
+                await DisplayAlert("Sucesso", $"✅ Estoque atualizado para {quantidadeDesejada} máquina(s)!\nEstoque atual: {EstoqueTotalValue.Text}", "OK");
+            }
             else
-                mensagem = $"⚠️ {sucessos}/{quantidade} criadas, {falhas} falharam.\nÚltimo erro: {ultimoErro}\nEstoque total: {EstoqueTotalValue.Text}";
-
-            await DisplayAlert("Resultado", mensagem, "OK");
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                var mensagemErro = doc.RootElement.TryGetProperty("message", out var msgElement) 
+                    ? msgElement.GetString() 
+                    : $"Erro {(int)response.StatusCode}";
+                
+                await DisplayAlert("Erro", $"❌ Falha ao atualizar estoque.\n\n{mensagemErro}", "OK");
+            }
         }
         catch (Exception ex)
         {
             await DisplayAlert("Erro", $"Falha ao atualizar estoque: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[TI] Exceção OnAtualizarEstoqueClicked: {ex}");
         }
     }
+}
+
+public class ChromestoqueResponseDto
+{
+    public Guid Id { get; set; }
+    public string NomeMaquina { get; set; } = string.Empty;
+    public string NumeroSerie { get; set; } = string.Empty;
+    public string Modelo { get; set; } = string.Empty;
+    public bool Ativo { get; set; }
+    public DateTime DataAquisicao { get; set; }
+    public Guid SchoolId { get; set; }
 }
 
 public class TiBookingVm
