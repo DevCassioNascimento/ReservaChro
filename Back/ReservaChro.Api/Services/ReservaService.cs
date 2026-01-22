@@ -18,6 +18,7 @@ public interface IReservaService
     Task<bool> RecusarReservaAsync(Guid id, Guid schoolId);
     Task<bool> ConcluirReservaAsync(Guid id, Guid schoolId);
     Task<int> GetQuantidadeDisponivelAsync(Guid schoolId, DateTime data);
+    Task<(int Pendentes, int EmUso, int Confirmadas, int Disponivel)> GetEstatisticasAsync(Guid schoolId);
 }
 
 public sealed class ReservaService : IReservaService
@@ -368,5 +369,43 @@ public sealed class ReservaService : IReservaService
 
         var disponivel = estoqueTotal - quantidadeReservada;
         return disponivel < 0 ? 0 : disponivel;
+    }
+
+    public async Task<(int Pendentes, int EmUso, int Confirmadas, int Disponivel)> GetEstatisticasAsync(Guid schoolId)
+    {
+        if (schoolId == Guid.Empty)
+            return (0, 0, 0, 0);
+
+        // Contar reservas por status
+        var pendentes = await Reservas
+            .AsNoTracking()
+            .CountAsync(r => r.SchoolId == schoolId && r.Status == StatusReserva.Pendente);
+
+        var emUso = await Reservas
+            .AsNoTracking()
+            .CountAsync(r => r.SchoolId == schoolId && r.Status == StatusReserva.EmUso);
+
+        var confirmadas = await Reservas
+            .AsNoTracking()
+            .CountAsync(r => r.SchoolId == schoolId && r.Status == StatusReserva.Confirmada);
+
+        // Buscar estoque total da escola
+        var school = await _dbContext.Schools
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == schoolId);
+
+        var estoqueTotal = school?.QuantidadeEstoque ?? 0;
+
+        // Calcular quantidade já reservada/confirmada (todas as datas)
+        var quantidadeReservada = await Reservas
+            .AsNoTracking()
+            .Where(r => r.SchoolId == schoolId
+                && (r.Status == StatusReserva.Confirmada || r.Status == StatusReserva.EmUso))
+            .SumAsync(r => (int?)r.Quantidade) ?? 0;
+
+        var disponivel = estoqueTotal - quantidadeReservada;
+        disponivel = disponivel < 0 ? 0 : disponivel;
+
+        return (pendentes, emUso, confirmadas, disponivel);
     }
 }

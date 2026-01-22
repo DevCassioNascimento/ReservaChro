@@ -58,6 +58,7 @@ public partial class TiDashboardPage : ContentPage
         this.Appearing += async (_, __) =>
         {
             await EnsureTokenAsync();
+            await LoadEstatisticas();
             await LoadEstoqueData();
             await LoadReservasPendentes();
         };
@@ -188,9 +189,9 @@ public partial class TiDashboardPage : ContentPage
         });
 
         // Stats padrão (será atualizado pela API)
-        PendentesValue.Text = "2";
-        EmUsoValue.Text = "1";
-        ConfirmadasValue.Text = "1";
+        PendentesValue.Text = "0";
+        EmUsoValue.Text = "0";
+        ConfirmadasValue.Text = "0";
         DisponivelValue.Text = "0";
         EstoqueTotalValue.Text = "0";
     }
@@ -399,6 +400,68 @@ public partial class TiDashboardPage : ContentPage
         }
     }
 
+    private async Task LoadEstatisticas()
+    {
+        try
+        {
+            await EnsureTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(_token))
+            {
+                PendentesValue.Text = "0";
+                EmUsoValue.Text = "0";
+                ConfirmadasValue.Text = "0";
+                DisponivelValue.Text = "0";
+                return;
+            }
+
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(15)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            var response = await client.GetAsync($"{_apiBaseUrl}/reservas/estatisticas");
+            var json = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[TI] GET /reservas/estatisticas -> {(int)response.StatusCode} {response.StatusCode}");
+            System.Diagnostics.Debug.WriteLine($"[TI] Body: {json}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                System.Diagnostics.Debug.WriteLine($"[TI] Erro ao buscar estatísticas: {json}");
+                return;
+            }
+
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            
+            if (doc.RootElement.TryGetProperty("pendentes", out var pendentesElement))
+            {
+                PendentesValue.Text = pendentesElement.GetInt32().ToString();
+            }
+
+            if (doc.RootElement.TryGetProperty("emUso", out var emUsoElement))
+            {
+                EmUsoValue.Text = emUsoElement.GetInt32().ToString();
+            }
+
+            if (doc.RootElement.TryGetProperty("confirmadas", out var confirmadasElement))
+            {
+                ConfirmadasValue.Text = confirmadasElement.GetInt32().ToString();
+            }
+
+            if (doc.RootElement.TryGetProperty("disponivel", out var disponivelElement))
+            {
+                DisponivelValue.Text = disponivelElement.GetInt32().ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[TI] Exceção LoadEstatisticas: {ex}");
+        }
+    }
+
     // ===== Tabs =====
     private void OnTabReservasClicked(object sender, EventArgs e) => SetTab("reservas");
     private void OnTabAgendaClicked(object sender, EventArgs e) => SetTab("agenda");
@@ -478,7 +541,8 @@ public partial class TiDashboardPage : ContentPage
             if (response.IsSuccessStatusCode)
             {
                 await DisplayAlert("Sucesso", "✅ Reserva confirmada com sucesso!", "OK");
-                // Recarregar lista de reservas
+                // Recarregar lista de reservas e estatísticas
+                await LoadEstatisticas();
                 await LoadReservasPendentes();
                 await LoadEstoqueData();
             }
@@ -543,7 +607,8 @@ public partial class TiDashboardPage : ContentPage
             if (response.IsSuccessStatusCode)
             {
                 await DisplayAlert("Sucesso", "✅ Reserva recusada com sucesso!", "OK");
-                // Recarregar lista de reservas (o card será removido automaticamente pois só mostra pendentes)
+                // Recarregar lista de reservas e estatísticas
+                await LoadEstatisticas();
                 await LoadReservasPendentes();
             }
             else
@@ -755,6 +820,115 @@ public partial class TiDashboardPage : ContentPage
         }
     }
 
+    private async void OnAddProfessorClicked(object sender, EventArgs e)
+    {
+        await EnsureTokenAsync();
+
+        if (string.IsNullOrWhiteSpace(_token))
+        {
+            await DisplayAlert("Erro", "Token não encontrado. Faça login novamente.", "OK");
+            return;
+        }
+
+        // Solicitar nome do professor
+        var nome = await DisplayPromptAsync(
+            "Adicionar Professor",
+            "Digite o nome do professor:",
+            "OK",
+            "Cancelar",
+            "",
+            -1,
+            Keyboard.Default,
+            "");
+
+        if (string.IsNullOrWhiteSpace(nome))
+            return;
+
+        // Solicitar e-mail do professor
+        var email = await DisplayPromptAsync(
+            "Adicionar Professor",
+            "Digite o e-mail do professor:",
+            "OK",
+            "Cancelar",
+            "",
+            -1,
+            Keyboard.Email,
+            "");
+
+        if (string.IsNullOrWhiteSpace(email))
+            return;
+
+        // Validar formato básico de e-mail
+        if (!email.Contains("@") || !email.Contains("."))
+        {
+            await DisplayAlert("Erro", "E-mail inválido.", "OK");
+            return;
+        }
+
+        // Enviar requisição para criar professor
+        try
+        {
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            var request = new
+            {
+                email = email.Trim(),
+                name = nome.Trim()
+            };
+
+            var response = await client.PostAsJsonAsync($"{_apiBaseUrl}/auth/professor", request);
+            var body = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[TI] POST /auth/professor -> {(int)response.StatusCode} {response.StatusCode} | {body}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(body);
+                    var senhaPadrao = doc.RootElement.TryGetProperty("senhaPadrao", out var senhaElement)
+                        ? senhaElement.GetString()
+                        : "123456";
+
+                    await DisplayAlert(
+                        "Sucesso",
+                        $"✅ Professor criado com sucesso!\n\nE-mail: {email}\nSenha padrão: {senhaPadrao}\n\nO professor pode alterar a senha após fazer login.",
+                        "OK");
+                }
+                catch
+                {
+                    await DisplayAlert("Sucesso", "✅ Professor criado com sucesso!", "OK");
+                }
+            }
+            else
+            {
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(body);
+                    var mensagemErro = doc.RootElement.TryGetProperty("message", out var msgElement)
+                        ? msgElement.GetString()
+                        : $"Erro {(int)response.StatusCode}";
+
+                    await DisplayAlert("Erro", $"❌ Falha ao criar professor.\n\n{mensagemErro}", "OK");
+                }
+                catch
+                {
+                    await DisplayAlert("Erro", $"❌ Falha ao criar professor.\n\nErro {(int)response.StatusCode}", "OK");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Falha ao criar professor: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[TI] Exceção OnAddProfessorClicked: {ex}");
+        }
+    }
+
     private async Task LoadAgendaReservas()
     {
         try
@@ -957,7 +1131,8 @@ public partial class TiDashboardPage : ContentPage
             if (response.IsSuccessStatusCode)
             {
                 await DisplayAlert("Sucesso", "✅ Reserva concluída com sucesso!", "OK");
-                // Recarregar agenda (o card será removido automaticamente)
+                // Recarregar agenda e estatísticas
+                await LoadEstatisticas();
                 await LoadAgendaReservas();
             }
             else

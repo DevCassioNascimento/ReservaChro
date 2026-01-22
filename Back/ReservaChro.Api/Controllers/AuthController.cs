@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReservaChro.Api.Services;
 using ReservaChro.Application.DTOs.Auth;
+using ReservaChro.Domain.Entities;
+using ReservaChro.Domain.Enums;
 using ReservaChro.Infrastructure.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -117,6 +119,75 @@ public sealed class AuthController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "Erro ao alterar senha.", detail = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Cria um novo professor (apenas para TI)
+    /// </summary>
+    [HttpPost("professor")]
+    [Authorize(Roles = nameof(Role.TI))]
+    public async Task<IActionResult> CreateProfessor([FromBody] CreateProfessorRequestDto? request)
+    {
+        if (request is null)
+            return BadRequest(new { message = "Dados são obrigatórios." });
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+            return BadRequest(new { message = "E-mail é obrigatório." });
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+            return BadRequest(new { message = "Nome é obrigatório." });
+
+        // Obter SchoolId do token do TI
+        var schoolIdClaim = User.FindFirst("schoolId") ??
+                           User.FindFirst("SchoolId") ??
+                           User.FindFirst("schoolID") ??
+                           User.FindFirst("school_id");
+
+        if (schoolIdClaim is null || !Guid.TryParse(schoolIdClaim.Value, out var schoolId))
+            return Unauthorized(new { message = "SchoolId não encontrado no token." });
+
+        // Verificar se o e-mail já existe
+        var emailNormalized = request.Email.Trim().ToLowerInvariant();
+        var emailExists = await _dbContext.Users
+            .AnyAsync(u => u.Email.ToLower() == emailNormalized);
+
+        if (emailExists)
+            return Conflict(new { message = "E-mail já cadastrado." });
+
+        // Senha padrão
+        var senhaPadrao = "123456"; // Senha padrão que o professor pode alterar depois
+
+        try
+        {
+            // Criar novo professor
+            var professor = new User(
+                name: request.Name.Trim(),
+                email: emailNormalized,
+                role: Role.Professor,
+                schoolId: schoolId);
+
+            // Definir senha padrão (TEMPORÁRIO: sem hash)
+            professor.SetPassword(senhaPadrao, "TEMP");
+
+            _dbContext.Users.Add(professor);
+            await _dbContext.SaveChangesAsync();
+
+            return CreatedAtAction(
+                nameof(Login),
+                new { },
+                new
+                {
+                    message = "Professor criado com sucesso.",
+                    id = professor.Id,
+                    email = professor.Email,
+                    name = professor.Name,
+                    senhaPadrao = senhaPadrao // Informar a senha padrão
+                });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Erro ao criar professor.", detail = ex.Message });
         }
     }
 }

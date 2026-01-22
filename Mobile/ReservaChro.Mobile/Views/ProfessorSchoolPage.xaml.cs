@@ -425,7 +425,14 @@ public partial class ProfessorSchoolPage : ContentPage
 
     private async void OnLogoutClicked(object sender, EventArgs e)
     {
-        // Placeholder: depois vamos limpar token e voltar pro login
-        await DisplayAlert("Logout", "Logout (simulado).", "OK");
+        try
+        {
+            // Remover token do SecureStorage
+            SecureStorage.Remove("auth_token");
+        }
+        catch { /* ignore */ }
+
+        // Voltar para a tela de login
+        await Navigation.PopToRootAsync();
     }
 }

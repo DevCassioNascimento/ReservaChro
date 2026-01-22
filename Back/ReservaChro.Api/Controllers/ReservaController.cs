@@ -281,6 +281,33 @@ public sealed class ReservaController : ControllerBase
     }
 
     /// <summary>
+    /// Obtém estatísticas de reservas da escola (apenas para TI)
+    /// </summary>
+    [HttpGet("estatisticas")]
+    [Authorize(Roles = nameof(Role.TI))]
+    public async Task<IActionResult> GetEstatisticas()
+    {
+        if (!TryGetSchoolId(out var schoolId))
+            return Unauthorized(new { message = "SchoolId não encontrado no token." });
+
+        try
+        {
+            var (pendentes, emUso, confirmadas, disponivel) = await _service.GetEstatisticasAsync(schoolId);
+            return Ok(new
+            {
+                pendentes,
+                emUso,
+                confirmadas,
+                disponivel
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Erro ao obter estatísticas.", detail = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Lista TODAS as reservas da escola (debug - apenas para TI)
     /// </summary>
     [HttpGet("todas")]
