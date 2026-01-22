@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ReservaChro.Mobile.Views.GerenciarProfessoresPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Gerenciar Professores"
+    BackgroundColor="#06121f">
+
+    <Grid RowDefinitions="70, *">
+
+        <!-- TOP BAR -->
+        <Grid Grid.Row="0"
+              BackgroundColor="#071a2b"
+              Padding="16"
+              ColumnDefinitions="Auto,*,Auto">
+
+            <!-- Left: Back button -->
+            <Button Grid.Column="0"
+                    Text="←"
+                    BackgroundColor="#0b2a4a"
+                    TextColor="White"
+                    CornerRadius="12"
+                    HeightRequest="40"
+                    WidthRequest="50"
+                    Clicked="OnVoltarClicked"
+                    VerticalOptions="Center"/>
+
+            <!-- Center: Title -->
+            <Label Grid.Column="1"
+                   Text="Gerenciar Professores"
+                   TextColor="White"
+                   FontAttributes="Bold"
+                   FontSize="18"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+
+            <!-- Right: Refresh -->
+            <Button Grid.Column="2"
+                    Text="🔄"
+                    BackgroundColor="#0b2a4a"
+                    TextColor="White"
+                    CornerRadius="12"
+                    HeightRequest="40"
+                    WidthRequest="50"
+                    Clicked="OnRefreshClicked"
+                    VerticalOptions="Center"/>
+        </Grid>
+
+        <!-- BODY -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="18" Spacing="16">
+
+                <!-- Botão Adicionar Professor -->
+                <Button Text="➕ Adicionar Professor"
+                        BackgroundColor="#0a60d1"
+                        TextColor="White"
+                        CornerRadius="14"
+                        HeightRequest="48"
+                        Clicked="OnAdicionarProfessorClicked"/>
+
+                <!-- Loading indicator -->
+                <ActivityIndicator x:Name="LoadingIndicator"
+                                   IsRunning="False"
+                                   IsVisible="False"
+                                   Color="White"
+                                   HeightRequest="50"/>
+
+                <!-- Empty state -->
+                <Label x:Name="EmptyStateLabel"
+                       Text="Nenhum professor cadastrado."
+                       TextColor="#8fb6ff"
+                       FontSize="14"
+                       HorizontalOptions="Center"
+                       IsVisible="False"
+                       Margin="0,40,0,0"/>
+
+                <!-- Professores List -->
+                <CollectionView x:Name="ProfessoresCollectionView"
+                                ItemsSource="{Binding Professores}"
+                                SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame CornerRadius="16"
+                                   BackgroundColor="#0b1b2c"
+                                   HasShadow="True"
+                                   Padding="16"
+                                   Margin="0,0,0,12">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <VerticalStackLayout Spacing="6">
+                                        <Label Text="{Binding Name}"
+                                               TextColor="White"
+                                               FontAttributes="Bold"
+                                               FontSize="16"/>
+                                        <Label Text="{Binding Email}"
+                                               TextColor="#8fb6ff"
+                                               FontSize="13"/>
+                                    </VerticalStackLayout>
+
+                                    <Button Grid.Column="1"
+                                            Text="🗑️"
+                                            BackgroundColor="#ff6b6b"
+                                            TextColor="White"
+                                            CornerRadius="12"
+                                            WidthRequest="50"
+                                            HeightRequest="50"
+                                            CommandParameter="{Binding Id}"
+                                            Clicked="OnExcluirProfessorClicked"/>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

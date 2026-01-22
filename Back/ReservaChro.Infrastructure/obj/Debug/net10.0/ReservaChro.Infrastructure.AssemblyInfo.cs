@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ReservaChro.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d001ec2e0370c3f9cfb2e426bc35f2d82f67fe81")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+44a6909be590bac6a7da35982c26e531d2ed0d46")]
 [assembly: System.Reflection.AssemblyProductAttribute("ReservaChro.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ReservaChro.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

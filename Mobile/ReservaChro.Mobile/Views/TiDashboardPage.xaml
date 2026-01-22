@@ -281,14 +281,14 @@
                     </Grid>
                 </Frame>
 
-                <!-- Botão Add Professor -->
-                <Button Text="➕ Add Prof"
+                <!-- Botão Gerenciar Professores -->
+                <Button Text="👥 Gerenciar Professores"
                         BackgroundColor="#2a3a57"
                         TextColor="White"
                         CornerRadius="14"
                         HeightRequest="48"
                         Margin="0,8,0,0"
-                        Clicked="OnAddProfessorClicked"/>
+                        Clicked="OnGerenciarProfessoresClicked"/>
 
                 <!-- CONTENT: RESERVAS -->
                 <VerticalStackLayout x:Name="ReservasPanel"

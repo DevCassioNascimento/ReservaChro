@@ -820,6 +820,13 @@ public partial class TiDashboardPage : ContentPage
         }
     }
 
+    private async void OnGerenciarProfessoresClicked(object sender, EventArgs e)
+    {
+        await EnsureTokenAsync();
+        var gerenciarPage = new GerenciarProfessoresPage(_token);
+        await Navigation.PushAsync(gerenciarPage);
+    }
+
     private async void OnAddProfessorClicked(object sender, EventArgs e)
     {
         await EnsureTokenAsync();

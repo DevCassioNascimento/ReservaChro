@@ -190,4 +190,87 @@ public sealed class AuthController : ControllerBase
             return StatusCode(500, new { message = "Erro ao criar professor.", detail = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Lista professores da escola (apenas para TI)
+    /// </summary>
+    [HttpGet("professores")]
+    [Authorize(Roles = nameof(Role.TI))]
+    public async Task<IActionResult> GetProfessores()
+    {
+        // Obter SchoolId do token do TI
+        var schoolIdClaim = User.FindFirst("schoolId") ??
+                           User.FindFirst("SchoolId") ??
+                           User.FindFirst("schoolID") ??
+                           User.FindFirst("school_id");
+
+        if (schoolIdClaim is null || !Guid.TryParse(schoolIdClaim.Value, out var schoolId))
+            return Unauthorized(new { message = "SchoolId não encontrado no token." });
+
+        try
+        {
+            var professores = await _dbContext.Users
+                .AsNoTracking()
+                .Where(u => u.SchoolId == schoolId && u.Role == Role.Professor)
+                .OrderBy(u => u.Name)
+                .Select(u => new ProfessorResponseDto
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Email = u.Email
+                })
+                .ToListAsync();
+
+            return Ok(professores);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Erro ao listar professores.", detail = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Exclui um professor (apenas para TI)
+    /// </summary>
+    [HttpDelete("professor/{id:guid}")]
+    [Authorize(Roles = nameof(Role.TI))]
+    public async Task<IActionResult> DeleteProfessor(Guid id)
+    {
+        // Obter SchoolId do token do TI
+        var schoolIdClaim = User.FindFirst("schoolId") ??
+                           User.FindFirst("SchoolId") ??
+                           User.FindFirst("schoolID") ??
+                           User.FindFirst("school_id");
+
+        if (schoolIdClaim is null || !Guid.TryParse(schoolIdClaim.Value, out var schoolId))
+            return Unauthorized(new { message = "SchoolId não encontrado no token." });
+
+        try
+        {
+            var professor = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.SchoolId == schoolId && u.Role == Role.Professor);
+
+            if (professor is null)
+                return NotFound(new { message = "Professor não encontrado ou não pertence à sua escola." });
+
+            // Verificar se o professor tem reservas ativas (pendentes, confirmadas ou em uso)
+            var temReservasAtivas = await _dbContext.Set<Reserva>()
+                .AnyAsync(r => r.ProfessorId == id && 
+                              (r.Status == StatusReserva.Pendente || 
+                               r.Status == StatusReserva.Confirmada || 
+                               r.Status == StatusReserva.EmUso));
+
+            if (temReservasAtivas)
+                return BadRequest(new { message = "Não é possível excluir professor com reservas ativas." });
+
+            _dbContext.Users.Remove(professor);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "Professor excluído com sucesso." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Erro ao excluir professor.", detail = ex.Message });
+        }
+    }
 }
