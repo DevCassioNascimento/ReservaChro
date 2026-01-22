@@ -57,6 +57,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IChromestoqueService, ChromestoqueService>();
 builder.Services.AddScoped<ISchoolService, SchoolService>();
+builder.Services.AddScoped<IReservaService, ReservaService>();
 
 // JWT Authentication
 var jwtSection = builder.Configuration.GetSection("JwtSettings");

@@ -21,6 +21,8 @@ public sealed class AppDbContext : DbContext
     // ✅ Compatibilidade (caso algum código antigo ainda use Chromestoque)
     public DbSet<Chromestoque> Chromestoque => Set<Chromestoque>();
 
+    public DbSet<Reserva> Reservas => Set<Reserva>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -115,6 +117,54 @@ public sealed class AppDbContext : DbContext
             entity.HasOne<School>()
                 .WithMany()
                 .HasForeignKey(c => c.SchoolId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // RESERVA
+        modelBuilder.Entity<Reserva>(entity =>
+        {
+            entity.ToTable("Reservas");
+
+            entity.HasKey(r => r.Id);
+
+            entity.Property(r => r.ProfessorId)
+                .IsRequired();
+
+            entity.Property(r => r.SchoolId)
+                .IsRequired();
+
+            entity.Property(r => r.DataReserva)
+                .IsRequired();
+
+            entity.Property(r => r.HorarioInicio)
+                .IsRequired();
+
+            entity.Property(r => r.HorarioFim)
+                .IsRequired();
+
+            entity.Property(r => r.Quantidade)
+                .IsRequired();
+
+            entity.Property(r => r.Status)
+                .IsRequired()
+                .HasConversion<int>();
+
+            entity.Property(r => r.DataCriacao)
+                .IsRequired();
+
+            // Índices para melhor performance
+            entity.HasIndex(r => new { r.SchoolId, r.DataReserva, r.Status });
+            entity.HasIndex(r => r.ProfessorId);
+
+            // FKs
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(r => r.ProfessorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<School>()
+                .WithMany()
+                .HasForeignKey(r => r.SchoolId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

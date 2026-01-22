@@ -58,6 +58,7 @@ public partial class TiDashboardPage : ContentPage
         {
             await EnsureTokenAsync();
             await LoadEstoqueData();
+            await LoadReservasPendentes();
         };
 
         SetTab("reservas");
@@ -194,6 +195,85 @@ public partial class TiDashboardPage : ContentPage
     }
 
     // ===== API Integration =====
+    private async Task LoadReservasPendentes()
+    {
+        try
+        {
+            await EnsureTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(_token))
+            {
+                return;
+            }
+
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(15)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            var response = await client.GetAsync($"{_apiBaseUrl}/reservas/pendentes");
+            var json = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[TI] GET /reservas/pendentes -> {(int)response.StatusCode} {response.StatusCode}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Se falhar, mantém dados mock
+                return;
+            }
+
+            var reservas = System.Text.Json.JsonSerializer.Deserialize<List<ReservaResponseDto>>(json)
+                ?? new List<ReservaResponseDto>();
+
+            Bookings.Clear();
+
+            foreach (var reserva in reservas)
+            {
+                var statusText = reserva.Status switch
+                {
+                    1 => "Pendente",
+                    2 => "Confirmada",
+                    3 => "Recusada",
+                    4 => "Em uso",
+                    5 => "Concluída",
+                    _ => "Desconhecido"
+                };
+
+                var statusColor = reserva.Status switch
+                {
+                    1 => Color.FromArgb("#7a5b16"), // Pendente - laranja
+                    2 => Color.FromArgb("#1c4f86"),  // Confirmada - azul
+                    4 => Color.FromArgb("#1f6b4a"),  // Em uso - verde
+                    _ => Colors.Gray
+                };
+
+                Bookings.Add(new TiBookingVm
+                {
+                    Id = reserva.Id.ToString(),
+                    ProfessorName = reserva.ProfessorNome,
+                    DateText = reserva.DataReserva.ToString("dd/MM/yyyy"),
+                    Time = $"{reserva.HorarioInicio:hh\\:mm} - {reserva.HorarioFim:hh\\:mm}",
+                    QuantityText = $"{reserva.Quantidade} unidades",
+                    StatusText = statusText,
+                    StatusColor = statusColor,
+                    ShowConfirm = reserva.Status == 1, // Pendente
+                    ShowRecusar = reserva.Status == 1, // Pendente
+                    ShowIniciarUso = reserva.Status == 2, // Confirmada
+                    ShowDevolucao = reserva.Status == 4 // Em uso
+                });
+            }
+
+            // Atualizar contador de pendentes
+            PendentesValue.Text = reservas.Count(r => r.Status == 1).ToString();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[TI] Exceção LoadReservasPendentes: {ex}");
+        }
+    }
+
     private async Task LoadEstoqueData()
     {
         try
@@ -285,8 +365,57 @@ public partial class TiDashboardPage : ContentPage
 
     private async void OnConfirmarClicked(object sender, EventArgs e)
     {
-        var id = (sender as Button)?.CommandParameter?.ToString();
-        await DisplayAlert("Confirmar", $"Confirmar reserva {id}", "OK");
+        var idString = (sender as Button)?.CommandParameter?.ToString();
+        if (string.IsNullOrWhiteSpace(idString) || !Guid.TryParse(idString, out var reservaId))
+        {
+            await DisplayAlert("Erro", "ID da reserva inválido.", "OK");
+            return;
+        }
+
+        try
+        {
+            await EnsureTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(_token))
+            {
+                await DisplayAlert("Erro", "Token não encontrado. Faça login novamente.", "OK");
+                return;
+            }
+
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            var response = await client.PutAsync($"{_apiBaseUrl}/reservas/{reservaId}/confirmar", null);
+            var body = await response.Content.ReadAsStringAsync();
+
+            System.Diagnostics.Debug.WriteLine($"[TI] PUT /reservas/{reservaId}/confirmar -> {(int)response.StatusCode} {response.StatusCode} | {body}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await DisplayAlert("Sucesso", "✅ Reserva confirmada com sucesso!", "OK");
+                // Recarregar lista de reservas
+                await LoadReservasPendentes();
+                await LoadEstoqueData();
+            }
+            else
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                var mensagemErro = doc.RootElement.TryGetProperty("message", out var msgElement)
+                    ? msgElement.GetString()
+                    : $"Erro {(int)response.StatusCode}";
+
+                await DisplayAlert("Erro", $"❌ Falha ao confirmar reserva.\n\n{mensagemErro}", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Falha ao confirmar reserva: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[TI] Exceção OnConfirmarClicked: {ex}");
+        }
     }
 
     private async void OnRecusarClicked(object sender, EventArgs e)
@@ -384,6 +513,20 @@ public class ChromestoqueResponseDto
     public bool Ativo { get; set; }
     public DateTime DataAquisicao { get; set; }
     public Guid SchoolId { get; set; }
+}
+
+public class ReservaResponseDto
+{
+    public Guid Id { get; set; }
+    public Guid ProfessorId { get; set; }
+    public string ProfessorNome { get; set; } = string.Empty;
+    public Guid SchoolId { get; set; }
+    public DateTime DataReserva { get; set; }
+    public TimeSpan HorarioInicio { get; set; }
+    public TimeSpan HorarioFim { get; set; }
+    public int Quantidade { get; set; }
+    public int Status { get; set; } // 1=Pendente, 2=Confirmada, 3=Recusada, 4=EmUso, 5=Concluida
+    public DateTime DataCriacao { get; set; }
 }
 
 public class TiBookingVm
